@@ -1,0 +1,140 @@
+@startuml Fachadas de Negocio (Controladores)
+title Capa de Fachadas de Negocio (Controladores)
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+package "Fachadas de Negocio (Controladores)" #LightCoral {
+
+  class UsuarioController {
+    -usuarioService : UsuarioService
+    --
+    +UsuarioController(usuarioService)
+    --
+    +registrarUsuario(usuario : Usuario) : Response
+    +obtenerUsuario(uid : String) : Response
+    +listarUsuarios() : Response
+    +actualizarUsuario(uid : String, usuario : Usuario) : Response
+    +eliminarUsuario(uid : String) : Response
+    +obtenerPerfil(uid : String) : Response
+  }
+
+  class ProgramadorController {
+    -programadorService : ProgramadorService
+    --
+    +ProgramadorController(programadorService)
+    --
+    +registrarProgramador(programador : Programador) : Response
+    +obtenerProgramador(uid : String) : Response
+    +listarProgramadores() : Response
+    +actualizarProgramador(uid : String, programador : Programador) : Response
+    +eliminarProgramador(uid : String) : Response
+    +agregarProyecto(uid : String, proyecto : Proyecto) : Response
+    +listarProyectos(uid : String) : Response
+    +agregarHorario(uid : String, horario : HorarioDisponible) : Response
+    +listarHorarios(uid : String) : Response
+    +registrarAusencia(uid : String, ausencia : Ausencia) : Response
+    +listarAusencias(uid : String) : Response
+    +verificarDisponibilidad(uid : String, fecha : String, hora : String) : Response
+  }
+
+  class AsesoriaController {
+    -asesoriaService : AsesoriaService
+    --
+    +AsesoriaController(asesoriaService)
+    --
+    +solicitarAsesoria(asesoria : Asesoria) : Response
+    +obtenerAsesoria(id : String) : Response
+    +listarAsesorias() : Response
+    +listarAsesoriasPorUsuario(usuarioUid : String) : Response
+    +listarAsesoriasPorProgramador(programadorUid : String) : Response
+    +aprobarAsesoria(id : String, respuesta : String) : Response
+    +rechazarAsesoria(id : String, respuesta : String) : Response
+    +completarAsesoria(id : String, comentario : String) : Response
+    +cancelarAsesoria(id : String) : Response
+  }
+
+  class ProyectoController {
+    -proyectoService : ProyectoService
+    --
+    +ProyectoController(proyectoService)
+    --
+    +crearProyecto(proyecto : Proyecto) : Response
+    +obtenerProyecto(id : String) : Response
+    +listarProyectos() : Response
+    +actualizarProyecto(id : String, proyecto : Proyecto) : Response
+    +eliminarProyecto(id : String) : Response
+    +buscarPorTecnologia(tecnologia : String) : Response
+    +buscarPorTipo(tipo : String) : Response
+  }
+
+  class AuthController {
+    -authService : AuthService
+    --
+    +AuthController(authService)
+    --
+    +login(credentials : LoginRequest) : Response
+    +logout(uid : String) : Response
+    +verificarToken(token : String) : Response
+    +obtenerUsuarioActual(uid : String) : Response
+    +verificarPermisos(uid : String, permiso : String) : Response
+  }
+}
+
+package "Capa de Objetos de Negocio" #LightGray {
+  class UsuarioService <<service>>
+  class ProgramadorService <<service>>
+  class AsesoriaService <<service>>
+  class ProyectoService <<service>>
+  class AuthService <<service>>
+}
+
+package "Cliente (Frontend Angular)" #LightSkyBlue {
+  class AppComponent <<component>>
+  class LoginComponent <<component>>
+  class AdminComponent <<component>>
+  class ProgramadorComponent <<component>>
+  class AsesoriasComponent <<component>>
+}
+
+' Dependencias de Controladores a Servicios
+UsuarioController --> UsuarioService : usa
+ProgramadorController --> ProgramadorService : usa
+AsesoriaController --> AsesoriaService : usa
+ProyectoController --> ProyectoService : usa
+AuthController --> AuthService : usa
+
+' Dependencias de Frontend a Controladores (API REST)
+AppComponent ..> AuthController : HTTP
+LoginComponent ..> AuthController : HTTP
+AdminComponent ..> UsuarioController : HTTP
+AdminComponent ..> ProgramadorController : HTTP
+ProgramadorComponent ..> ProgramadorController : HTTP
+ProgramadorComponent ..> ProyectoController : HTTP
+AsesoriasComponent ..> AsesoriaController : HTTP
+
+note right of UsuarioController
+  Fachada que expone endpoints REST
+  para operaciones de usuarios.
+  Delega la lógica al servicio.
+end note
+
+note right of AsesoriaController
+  Controlador principal para gestión
+  de asesorías. Recibe peticiones HTTP
+  y las procesa mediante el servicio.
+end note
+
+note bottom of AuthController
+  Maneja autenticación y autorización.
+  Interactúa con Firebase/Auth0
+  para validar tokens.
+end note
+
+note top of AppComponent
+  Componentes Angular que consumen
+  los endpoints REST expuestos por
+  los controladores mediante HTTP
+end note
+
+@enduml

@@ -1,0 +1,129 @@
+@startuml Objetos de Acceso a Datos (DAO)
+title Capa de Acceso a Datos (DAO)
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+package "Objetos de Acceso a Datos" #LightGreen {
+
+  interface CrudDAO<T> <<interface>> {
+    +create(id : String, entity : T) : T
+    +findById(id : String) : Optional<T>
+    +findAll() : List<T>
+    +update(id : String, entity : T) : T
+    +delete(id : String) : boolean
+    +clear() : void
+  }
+
+  class UsuarioDAO {
+    -storage : Map<String, Usuario>
+    --
+    +create(id, entity) : Usuario
+    +findById(id) : Optional<Usuario>
+    +findAll() : List<Usuario>
+    +update(id, entity) : Usuario
+    +delete(id) : boolean
+    +clear() : void
+    -resolveKey(providedId, entityId) : String
+  }
+
+  class ProgramadorDAO {
+    -storage : Map<String, Programador>
+    --
+    +create(id, entity) : Programador
+    +findById(id) : Optional<Programador>
+    +findAll() : List<Programador>
+    +update(id, entity) : Programador
+    +delete(id) : boolean
+    +clear() : void
+    -resolveKey(providedId, entityId) : String
+  }
+
+  class ProyectoDAO {
+    -storage : Map<String, Proyecto>
+    --
+    +create(id, entity) : Proyecto
+    +findById(id) : Optional<Proyecto>
+    +findAll() : List<Proyecto>
+    +update(id, entity) : Proyecto
+    +delete(id) : boolean
+    +clear() : void
+    -resolveKey(providedId, entityId) : String
+  }
+
+  class AsesoriaDAO {
+    -storage : Map<String, Asesoria>
+    --
+    +create(id, entity) : Asesoria
+    +findById(id) : Optional<Asesoria>
+    +findAll() : List<Asesoria>
+    +update(id, entity) : Asesoria
+    +delete(id) : boolean
+    +clear() : void
+    -resolveKey(providedId, entityId) : String
+  }
+
+  class AusenciaDAO {
+    -storage : Map<String, Ausencia>
+    --
+    +create(id, entity) : Ausencia
+    +findById(id) : Optional<Ausencia>
+    +findAll() : List<Ausencia>
+    +update(id, entity) : Ausencia
+    +delete(id) : boolean
+    +clear() : void
+    -resolveKey(providedId, entityId) : String
+  }
+
+  class HorarioDisponibleDAO {
+    -storage : Map<String, HorarioDisponible>
+    --
+    +create(id, entity) : HorarioDisponible
+    +findById(id) : Optional<HorarioDisponible>
+    +findAll() : List<HorarioDisponible>
+    +update(id, entity) : HorarioDisponible
+    +delete(id) : boolean
+    +clear() : void
+    -resolveKey(providedId) : String
+  }
+
+  ' Relaciones
+  CrudDAO <|.. UsuarioDAO : implements
+  CrudDAO <|.. ProgramadorDAO : implements
+  CrudDAO <|.. ProyectoDAO : implements
+  CrudDAO <|.. AsesoriaDAO : implements
+  CrudDAO <|.. AusenciaDAO : implements
+  CrudDAO <|.. HorarioDisponibleDAO : implements
+}
+
+package "Entidades" #LightGray {
+  class Usuario <<entity>>
+  class Programador <<entity>>
+  class Proyecto <<entity>>
+  class Asesoria <<entity>>
+  class Ausencia <<entity>>
+  class HorarioDisponible <<entity>>
+}
+
+' Dependencias de DAO a Entidades
+UsuarioDAO ..> Usuario : gestiona
+ProgramadorDAO ..> Programador : gestiona
+ProyectoDAO ..> Proyecto : gestiona
+AsesoriaDAO ..> Asesoria : gestiona
+AusenciaDAO ..> Ausencia : gestiona
+HorarioDisponibleDAO ..> HorarioDisponible : gestiona
+
+note right of CrudDAO
+  Interfaz genérica que define
+  las operaciones CRUD básicas
+  para todas las entidades
+end note
+
+note bottom of UsuarioDAO
+  Implementación en memoria usando
+  ConcurrentHashMap para persistencia
+  temporal (puede reemplazarse con
+  conexión a base de datos real)
+end note
+
+@enduml

@@ -1,0 +1,271 @@
+/* Estilos del componente Login */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background-image: url('/Wallpaper Silver Surfer.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(3px);
+  }
+}
+
+.login-container {
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-card {
+  background-color: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  border: 1px solid rgba(184, 184, 184, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+.login-header {
+  text-align: center;
+  padding: 3rem 2rem 2rem;
+  background: linear-gradient(135deg, rgba(184, 184, 184, 0.1) 0%, rgba(138, 138, 138, 0.1) 100%);
+
+  svg {
+    width: 64px;
+    height: 64px;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(184, 184, 184, 0.5));
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+  }
+}
+
+.login-body {
+  padding: 2rem;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 0.5rem;
+  color: #e74c3c;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: rgba(42, 42, 42, 0.8);
+  border: 2px solid rgba(184, 184, 184, 0.3);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary);
+    background-color: rgba(184, 184, 184, 0.15);
+    box-shadow: 0 4px 12px rgba(184, 184, 184, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.info-text {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      color: var(--text-muted);
+      padding: 0.5rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+      font-size: 0.875rem;
+
+      &::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--primary-light);
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1.5rem;
+  }
+
+  .login-card {
+    max-width: 100%;
+  }
+
+  .login-header {
+    padding: 2rem 1.5rem 1.5rem;
+
+    h1 {
+      font-size: 1.75rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+    }
+  }
+
+  .login-body {
+    padding: 1.5rem;
+  }
+
+  .google-btn {
+    font-size: 0.95rem;
+    padding: 0.9rem 1.25rem;
+  }
+
+  .info-text ul {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 1rem;
+  }
+
+  .login-container {
+    padding: 1rem;
+  }
+
+  .login-header {
+    padding: 1.5rem 1rem 1rem;
+
+    svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+    }
+  }
+
+  .login-body {
+    padding: 1.25rem;
+  }
+
+  .google-btn {
+    font-size: 0.9rem;
+    padding: 0.85rem 1rem;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .info-text {
+    padding: 1rem;
+
+    p {
+      font-size: 0.875rem;
+    }
+
+    ul {
+      font-size: 0.85rem;
+      padding-left: 1.25rem;
+
+      li {
+        margin-bottom: 0.4rem;
+      }
+    }
+  }
+}
+
+/* Mejoras de accesibilidad para focus */
+.google-btn:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Modo de alto contraste */
+@media (prefers-contrast: high) {
+  .login-card {
+    border: 2px solid var(--border);
+  }
+
+  .google-btn {
+    border: 2px solid var(--border);
+  }
+}
+
+/* Reducción de movimiento para usuarios con preferencias de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

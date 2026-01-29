@@ -1,0 +1,132 @@
+@startuml Objetos de Negocio (Lógica)
+title Capa de Objetos de Negocio (Lógica de Negocio)
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+package "Objetos de Negocio (Servicios)" #LightYellow {
+
+  class UsuarioService {
+    -usuarioDAO : UsuarioDAO
+    --
+    +UsuarioService(usuarioDAO)
+    --
+    +registrarUsuario(usuario : Usuario) : Usuario
+    +obtenerUsuarioPorId(uid : String) : Optional<Usuario>
+    +obtenerTodosUsuarios() : List<Usuario>
+    +actualizarUsuario(uid : String, usuario : Usuario) : Usuario
+    +eliminarUsuario(uid : String) : boolean
+    +validarEmail(email : String) : boolean
+    +validarRole(role : String) : boolean
+  }
+
+  class ProgramadorService {
+    -programadorDAO : ProgramadorDAO
+    -proyectoDAO : ProyectoDAO
+    -horarioDAO : HorarioDisponibleDAO
+    -ausenciaDAO : AusenciaDAO
+    --
+    +ProgramadorService(programadorDAO, proyectoDAO, horarioDAO, ausenciaDAO)
+    --
+    +registrarProgramador(programador : Programador) : Programador
+    +obtenerProgramadorPorId(uid : String) : Optional<Programador>
+    +obtenerTodosProgramadores() : List<Programador>
+    +actualizarProgramador(uid : String, programador : Programador) : Programador
+    +eliminarProgramador(uid : String) : boolean
+    +agregarProyecto(programadorUid : String, proyecto : Proyecto) : Proyecto
+    +obtenerProyectosProgramador(programadorUid : String) : List<Proyecto>
+    +agregarHorarioDisponible(programadorUid : String, horario : HorarioDisponible) : HorarioDisponible
+    +obtenerHorariosDisponibles(programadorUid : String) : List<HorarioDisponible>
+    +registrarAusencia(programadorUid : String, ausencia : Ausencia) : Ausencia
+    +obtenerAusencias(programadorUid : String) : List<Ausencia>
+    +verificarDisponibilidad(programadorUid : String, fecha : String, hora : String) : boolean
+  }
+
+  class AsesoriaService {
+    -asesoriaDAO : AsesoriaDAO
+    -usuarioDAO : UsuarioDAO
+    -programadorDAO : ProgramadorDAO
+    --
+    +AsesoriaService(asesoriaDAO, usuarioDAO, programadorDAO)
+    --
+    +solicitarAsesoria(asesoria : Asesoria) : Asesoria
+    +obtenerAsesoriaPorId(id : String) : Optional<Asesoria>
+    +obtenerTodasAsesorias() : List<Asesoria>
+    +obtenerAsesoriasPorUsuario(usuarioUid : String) : List<Asesoria>
+    +obtenerAsesoriasPorProgramador(programadorUid : String) : List<Asesoria>
+    +aprobarAsesoria(id : String, respuesta : String) : Asesoria
+    +rechazarAsesoria(id : String, respuesta : String) : Asesoria
+    +completarAsesoria(id : String, comentario : String) : Asesoria
+    +cancelarAsesoria(id : String) : boolean
+    +validarDisponibilidadProgramador(programadorUid : String, fecha : String, hora : String) : boolean
+  }
+
+  class ProyectoService {
+    -proyectoDAO : ProyectoDAO
+    --
+    +ProyectoService(proyectoDAO)
+    --
+    +crearProyecto(proyecto : Proyecto) : Proyecto
+    +obtenerProyectoPorId(id : String) : Optional<Proyecto>
+    +obtenerTodosProyectos() : List<Proyecto>
+    +actualizarProyecto(id : String, proyecto : Proyecto) : Proyecto
+    +eliminarProyecto(id : String) : boolean
+    +buscarProyectosPorTecnologia(tecnologia : String) : List<Proyecto>
+    +buscarProyectosPorTipo(tipo : String) : List<Proyecto>
+  }
+
+  class AuthService {
+    -usuarioDAO : UsuarioDAO
+    --
+    +AuthService(usuarioDAO)
+    --
+    +autenticar(email : String, token : String) : Optional<Usuario>
+    +verificarToken(token : String) : boolean
+    +obtenerUsuarioActual(uid : String) : Optional<Usuario>
+    +cerrarSesion(uid : String) : void
+    +verificarPermisos(uid : String, permiso : String) : boolean
+    +esAdmin(uid : String) : boolean
+    +esProgramador(uid : String) : boolean
+  }
+}
+
+package "Capa de Acceso a Datos" #LightGray {
+  class UsuarioDAO <<dao>>
+  class ProgramadorDAO <<dao>>
+  class ProyectoDAO <<dao>>
+  class AsesoriaDAO <<dao>>
+  class HorarioDisponibleDAO <<dao>>
+  class AusenciaDAO <<dao>>
+}
+
+' Dependencias de Servicios a DAOs
+UsuarioService --> UsuarioDAO : usa
+ProgramadorService --> ProgramadorDAO : usa
+ProgramadorService --> ProyectoDAO : usa
+ProgramadorService --> HorarioDisponibleDAO : usa
+ProgramadorService --> AusenciaDAO : usa
+AsesoriaService --> AsesoriaDAO : usa
+AsesoriaService --> UsuarioDAO : usa
+AsesoriaService --> ProgramadorDAO : usa
+ProyectoService --> ProyectoDAO : usa
+AuthService --> UsuarioDAO : usa
+
+note right of UsuarioService
+  Contiene la lógica de negocio
+  para gestión de usuarios,
+  validaciones y reglas de negocio
+end note
+
+note right of AsesoriaService
+  Coordina la lógica compleja
+  de asesorías: solicitud, aprobación,
+  validación de disponibilidad
+end note
+
+note bottom of ProgramadorService
+  Gestiona la lógica de negocio
+  de programadores incluyendo
+  proyectos, horarios y ausencias
+end note
+
+@enduml

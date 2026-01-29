@@ -1,0 +1,39 @@
+<div class="app-container">
+  <!-- Header con navegación -->
+  <header>
+    <h2>{{ title() }}</h2>
+
+    <nav>
+      <a href="https://avac.ups.edu.ec/grado67/my/" target="_blank">AVAC</a>
+      <a href="https://avac.ups.edu.ec/grado67/my/" target="_blank">Portal</a>
+    </nav>
+
+    <div class="brand-user-section">
+      <div class="user-info">
+        <img [src]="getCurrentUser()?.photoURL || 'https://via.placeholder.com/40'" alt="User photo" class="user-photo">
+        <div class="user-details">
+          <span class="user-name">{{ getCurrentUser()?.displayName }}</span>
+          <span class="user-email">{{ getCurrentUser()?.email }}</span>
+        </div>
+      </div>
+      <div class="user-role-container">
+        @if (isAdmin()) {
+          <span class="user-role admin">Admin</span>
+        } @else if (isProgramador()) {
+          <span class="user-role programador">Programador</span>
+        }
+        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido principal con rutas -->
+  <main>
+    <router-outlet />
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <small>&copy; 2025 JoseTixi y Angel Cardenas - Derechos reservados</small>
+  </footer>
+</div>

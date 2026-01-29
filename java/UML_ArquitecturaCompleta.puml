@@ -1,0 +1,168 @@
+@startuml Arquitectura Completa de N Capas
+title Arquitectura de N Capas - Sistema de Asesorías
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+' ===== CAPA DE PRESENTACIÓN (Frontend) =====
+package "CAPA DE PRESENTACIÓN\n(Frontend Angular)" #LightSkyBlue {
+  [LoginComponent]
+  [AdminComponent]
+  [ProgramadorComponent]
+  [AsesoriasComponent]
+  [HomeComponent]
+  
+  [AuthService (Angular)]
+  [UserService]
+  [AsesoriaService (Angular)]
+}
+
+' ===== CAPA DE FACHADAS (Controladores) =====
+package "CAPA DE FACHADAS DE NEGOCIO\n(Controladores - API REST)" #LightCoral {
+  [AuthController]
+  [UsuarioController]
+  [ProgramadorController]
+  [AsesoriaController]
+  [ProyectoController]
+}
+
+' ===== CAPA DE LÓGICA DE NEGOCIO (Servicios) =====
+package "CAPA DE OBJETOS DE NEGOCIO\n(Servicios - Lógica de Negocio)" #LightYellow {
+  [AuthService (Java)]
+  [UsuarioService]
+  [ProgramadorService]
+  [AsesoriaService (Java)]
+  [ProyectoService]
+}
+
+' ===== CAPA DE ACCESO A DATOS (DAO) =====
+package "CAPA DE ACCESO A DATOS\n(DAO - Data Access Objects)" #LightGreen {
+  interface "CrudDAO<T>" as CrudDAO
+  [UsuarioDAO]
+  [ProgramadorDAO]
+  [AsesoriaDAO]
+  [ProyectoDAO]
+  [AusenciaDAO]
+  [HorarioDisponibleDAO]
+  
+  CrudDAO <|.. UsuarioDAO
+  CrudDAO <|.. ProgramadorDAO
+  CrudDAO <|.. AsesoriaDAO
+  CrudDAO <|.. ProyectoDAO
+  CrudDAO <|.. AusenciaDAO
+  CrudDAO <|.. HorarioDisponibleDAO
+}
+
+' ===== CAPA DE ENTIDADES (Modelos) =====
+package "CAPA DE ENTIDADES DE NEGOCIO\n(Modelos de Dominio)" #LightBlue {
+  [Usuario]
+  [Programador]
+  [Asesoria]
+  [Proyecto]
+  [Ausencia]
+  [HorarioDisponible]
+  
+  Usuario <|-- Programador
+  Programador "1" *-- "*" Proyecto
+  Programador "1" *-- "*" HorarioDisponible
+  Programador "1" *-- "*" Ausencia
+}
+
+' ===== CAPA DE PERSISTENCIA =====
+database "PERSISTENCIA\n(ConcurrentHashMap / Firebase)" {
+  [Storage en Memoria]
+  [Firebase Firestore]
+}
+
+' ===== RELACIONES ENTRE CAPAS =====
+
+' Frontend -> Controladores (HTTP/REST)
+[LoginComponent] -down-> [AuthController] : HTTP POST/GET
+[AdminComponent] -down-> [UsuarioController] : HTTP
+[AdminComponent] -down-> [ProgramadorController] : HTTP
+[ProgramadorComponent] -down-> [ProgramadorController] : HTTP
+[ProgramadorComponent] -down-> [ProyectoController] : HTTP
+[AsesoriasComponent] -down-> [AsesoriaController] : HTTP
+
+' Controladores -> Servicios (Llamadas directas)
+[AuthController] -down-> [AuthService (Java)] : usa
+[UsuarioController] -down-> [UsuarioService] : usa
+[ProgramadorController] -down-> [ProgramadorService] : usa
+[AsesoriaController] -down-> [AsesoriaService (Java)] : usa
+[ProyectoController] -down-> [ProyectoService] : usa
+
+' Servicios -> DAOs (Llamadas directas)
+[AuthService (Java)] -down-> [UsuarioDAO] : usa
+[UsuarioService] -down-> [UsuarioDAO] : usa
+[ProgramadorService] -down-> [ProgramadorDAO] : usa
+[ProgramadorService] -down-> [ProyectoDAO] : usa
+[ProgramadorService] -down-> [HorarioDisponibleDAO] : usa
+[ProgramadorService] -down-> [AusenciaDAO] : usa
+[AsesoriaService (Java)] -down-> [AsesoriaDAO] : usa
+[AsesoriaService (Java)] -down-> [UsuarioDAO] : usa
+[AsesoriaService (Java)] -down-> [ProgramadorDAO] : usa
+[ProyectoService] -down-> [ProyectoDAO] : usa
+
+' DAOs -> Entidades (Gestiona)
+[UsuarioDAO] -down-> [Usuario] : gestiona
+[ProgramadorDAO] -down-> [Programador] : gestiona
+[AsesoriaDAO] -down-> [Asesoria] : gestiona
+[ProyectoDAO] -down-> [Proyecto] : gestiona
+[AusenciaDAO] -down-> [Ausencia] : gestiona
+[HorarioDisponibleDAO] -down-> [HorarioDisponible] : gestiona
+
+' DAOs -> Persistencia
+[UsuarioDAO] -down-> [Storage en Memoria] : almacena
+[ProgramadorDAO] -down-> [Storage en Memoria] : almacena
+[AsesoriaDAO] -down-> [Storage en Memoria] : almacena
+[ProyectoDAO] -down-> [Storage en Memoria] : almacena
+[AusenciaDAO] -down-> [Storage en Memoria] : almacena
+[HorarioDisponibleDAO] -down-> [Storage en Memoria] : almacena
+
+[Storage en Memoria] .down.> [Firebase Firestore] : puede migrar a
+
+' ===== NOTAS EXPLICATIVAS =====
+note right of "CAPA DE PRESENTACIÓN\n(Frontend Angular)"
+  **Responsabilidad:**
+  - Interfaz de usuario
+  - Validaciones de formularios
+  - Consumo de API REST
+  - Experiencia de usuario (UX)
+end note
+
+note right of "CAPA DE FACHADAS DE NEGOCIO\n(Controladores - API REST)"
+  **Responsabilidad:**
+  - Exponer endpoints REST
+  - Recibir peticiones HTTP
+  - Validar requests
+  - Delegar a servicios
+  - Formatear responses
+end note
+
+note right of "CAPA DE OBJETOS DE NEGOCIO\n(Servicios - Lógica de Negocio)"
+  **Responsabilidad:**
+  - Reglas de negocio
+  - Validaciones complejas
+  - Coordinación entre DAOs
+  - Transacciones
+  - Lógica de dominio
+end note
+
+note right of "CAPA DE ACCESO A DATOS\n(DAO - Data Access Objects)"
+  **Responsabilidad:**
+  - Operaciones CRUD
+  - Abstracción de persistencia
+  - Queries a base de datos
+  - Manejo de transacciones
+  - Independencia de tecnología
+end note
+
+note right of "CAPA DE ENTIDADES DE NEGOCIO\n(Modelos de Dominio)"
+  **Responsabilidad:**
+  - Estructura de datos
+  - Relaciones entre entidades
+  - Getters y Setters
+  - Validaciones básicas
+  - Representación del dominio
+end note
+
+@enduml

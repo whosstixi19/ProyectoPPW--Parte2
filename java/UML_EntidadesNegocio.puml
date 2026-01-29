@@ -1,0 +1,222 @@
+@startuml Entidades de Negocio
+title Capa de Entidades de Negocio
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+package "Entidades de Negocio" #LightBlue {
+
+  class Usuario {
+    -uid : String
+    -email : String
+    -displayName : String
+    -photoURL : String
+    -role : String
+    -createdAt : Date
+    --
+    +Usuario()
+    +Usuario(uid, email, displayName, photoURL, role, createdAt)
+    --
+    +getUid() : String
+    +setUid(uid) : void
+    +getEmail() : String
+    +setEmail(email) : void
+    +getDisplayName() : String
+    +setDisplayName(displayName) : void
+    +getPhotoURL() : String
+    +setPhotoURL(photoURL) : void
+    +getRole() : String
+    +setRole(role) : void
+    +getCreatedAt() : Date
+    +setCreatedAt(createdAt) : void
+  }
+
+  class Programador {
+    -especialidad : String
+    -descripcion : String
+    -github : String
+    -linkedin : String
+    -twitter : String
+    -portfolio : String
+    -proyectos : List<Proyecto>
+    -horariosDisponibles : List<HorarioDisponible>
+    -ausencias : List<Ausencia>
+    --
+    +Programador()
+    +Programador(uid, email, displayName, photoURL, role, createdAt, especialidad, descripcion)
+    --
+    +getEspecialidad() : String
+    +setEspecialidad(especialidad) : void
+    +getDescripcion() : String
+    +setDescripcion(descripcion) : void
+    +getGithub() : String
+    +setGithub(github) : void
+    +getLinkedin() : String
+    +setLinkedin(linkedin) : void
+    +getTwitter() : String
+    +setTwitter(twitter) : void
+    +getPortfolio() : String
+    +setPortfolio(portfolio) : void
+    +getProyectos() : List<Proyecto>
+    +setProyectos(proyectos) : void
+    +getHorariosDisponibles() : List<HorarioDisponible>
+    +setHorariosDisponibles(horariosDisponibles) : void
+    +getAusencias() : List<Ausencia>
+    +setAusencias(ausencias) : void
+  }
+
+  class Proyecto {
+    -id : String
+    -nombre : String
+    -descripcion : String
+    -tipo : String
+    -participacion : List<String>
+    -tecnologias : List<String>
+    -repositorio : String
+    -demo : String
+    -imagenes : List<String>
+    -fechaCreacion : Date
+    --
+    +Proyecto()
+    +Proyecto(id, nombre, descripcion, tipo, participacion, tecnologias, fechaCreacion)
+    --
+    +getId() : String
+    +setId(id) : void
+    +getNombre() : String
+    +setNombre(nombre) : void
+    +getDescripcion() : String
+    +setDescripcion(descripcion) : void
+    +getTipo() : String
+    +setTipo(tipo) : void
+    +getParticipacion() : List<String>
+    +setParticipacion(participacion) : void
+    +getTecnologias() : List<String>
+    +setTecnologias(tecnologias) : void
+    +getRepositorio() : String
+    +setRepositorio(repositorio) : void
+    +getDemo() : String
+    +setDemo(demo) : void
+    +getImagenes() : List<String>
+    +setImagenes(imagenes) : void
+    +getFechaCreacion() : Date
+    +setFechaCreacion(fechaCreacion) : void
+  }
+
+  class Asesoria {
+    -id : String
+    -usuarioUid : String
+    -usuarioNombre : String
+    -usuarioEmail : String
+    -programadorUid : String
+    -programadorNombre : String
+    -tema : String
+    -descripcion : String
+    -comentario : String
+    -fechaSolicitada : String
+    -horaSolicitada : String
+    -estado : String
+    -fecha : Date
+    -respuesta : String
+    -fechaRespuesta : Date
+    --
+    +Asesoria()
+    +Asesoria(id, usuarioUid, usuarioNombre, usuarioEmail, programadorUid, programadorNombre, tema, descripcion, fechaSolicitada, horaSolicitada, estado)
+    --
+    +getId() : String
+    +setId(id) : void
+    +getUsuarioUid() : String
+    +setUsuarioUid(usuarioUid) : void
+    +getUsuarioNombre() : String
+    +setUsuarioNombre(usuarioNombre) : void
+    +getUsuarioEmail() : String
+    +setUsuarioEmail(usuarioEmail) : void
+    +getProgramadorUid() : String
+    +setProgramadorUid(programadorUid) : void
+    +getProgramadorNombre() : String
+    +setProgramadorNombre(programadorNombre) : void
+    +getTema() : String
+    +setTema(tema) : void
+    +getDescripcion() : String
+    +setDescripcion(descripcion) : void
+    +getComentario() : String
+    +setComentario(comentario) : void
+    +getFechaSolicitada() : String
+    +setFechaSolicitada(fechaSolicitada) : void
+    +getHoraSolicitada() : String
+    +setHoraSolicitada(horaSolicitada) : void
+    +getEstado() : String
+    +setEstado(estado) : void
+    +getFecha() : Date
+    +setFecha(fecha) : void
+    +getRespuesta() : String
+    +setRespuesta(respuesta) : void
+    +getFechaRespuesta() : Date
+    +setFechaRespuesta(fechaRespuesta) : void
+  }
+
+  class Ausencia {
+    -id : String
+    -fecha : String
+    -horaInicio : String
+    -horaFin : String
+    -motivo : String
+    --
+    +Ausencia()
+    +Ausencia(id, fecha, horaInicio, horaFin, motivo)
+    --
+    +getId() : String
+    +setId(id) : void
+    +getFecha() : String
+    +setFecha(fecha) : void
+    +getHoraInicio() : String
+    +setHoraInicio(horaInicio) : void
+    +getHoraFin() : String
+    +setHoraFin(horaFin) : void
+    +getMotivo() : String
+    +setMotivo(motivo) : void
+  }
+
+  class HorarioDisponible {
+    -dia : String
+    -horaInicio : String
+    -horaFin : String
+    -activo : boolean
+    --
+    +HorarioDisponible()
+    +HorarioDisponible(dia, horaInicio, horaFin, activo)
+    --
+    +getDia() : String
+    +setDia(dia) : void
+    +getHoraInicio() : String
+    +setHoraInicio(horaInicio) : void
+    +getHoraFin() : String
+    +setHoraFin(horaFin) : void
+    +isActivo() : boolean
+    +setActivo(activo) : void
+  }
+
+  ' Relaciones
+  Programador --|> Usuario : herencia
+  Programador "1" *-- "*" Proyecto : contiene
+  Programador "1" *-- "*" HorarioDisponible : contiene
+  Programador "1" *-- "*" Ausencia : contiene
+  Asesoria ..> Usuario : referencia (usuarioUid)
+  Asesoria ..> Programador : referencia (programadorUid)
+}
+
+note right of Usuario
+  Entidad base para todos los usuarios
+  del sistema (estudiantes y programadores)
+end note
+
+note right of Programador
+  Extiende Usuario con atributos
+  específicos de programadores
+end note
+
+note right of Asesoria
+  Relaciona Usuario con Programador
+  para las sesiones de asesoría
+end note
+
+@enduml

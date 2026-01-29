@@ -1,0 +1,498 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>Panel de Administración</h1>
+      </div>
+
+      <div class="header-actions">
+        <div class="action-buttons">
+          <button class="btn btn-secondary" (click)="goToInicio()">Inicio</button>
+          <button class="btn btn-secondary" (click)="loadProgramadores()" title="Recargar datos">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Recargar
+          </button>
+          <button class="btn btn-info" (click)="openUsuariosModal()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Gestionar Usuarios
+          </button>
+          <button class="btn btn-primary" (click)="openEditModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Agregar Programador
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-content">
+    @if (loading) {
+      <div class="loading">
+        <p>Cargando programadores...</p>
+      </div>
+    } @else if (programadores.length === 0) {
+      <div class="empty-state">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <h2>No hay programadores registrados</h2>
+        <p>Usa "Gestionar Usuarios" para cambiar roles de usuarios existentes a programador</p>
+      </div>
+    } @else {
+      <div class="programadores-grid">
+        @for (prog of programadores; track prog.uid) {
+          <div class="programador-card">
+            <div class="card-header">
+              @if (prog.photoURL) {
+                <img [src]="prog.photoURL" [alt]="prog.displayName" class="avatar" />
+              } @else {
+                <div class="avatar-placeholder">
+                  {{ prog.displayName.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <div class="card-info">
+                <h3>{{ prog.displayName }}</h3>
+                <p class="email">{{ prog.email }}</p>
+                @if (prog.especialidad) {
+                  <span class="badge">{{ prog.especialidad }}</span>
+                }
+              </div>
+            </div>
+
+            @if (prog.descripcion) {
+              <div class="card-description">
+                <p>{{ prog.descripcion }}</p>
+              </div>
+            }
+
+            @if (prog.redesSociales) {
+              <div class="card-social">
+                @if (prog.redesSociales.github) {
+                  <a [href]="prog.redesSociales.github" target="_blank" title="GitHub">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                      />
+                    </svg>
+                  </a>
+                }
+                @if (prog.redesSociales.linkedin) {
+                  <a [href]="prog.redesSociales.linkedin" target="_blank" title="LinkedIn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                      />
+                    </svg>
+                  </a>
+                }
+                @if (prog.redesSociales.portfolio) {
+                  <a [href]="prog.redesSociales.portfolio" target="_blank" title="Portfolio">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                  </a>
+                }
+              </div>
+            }
+
+            @if (prog.proyectos && prog.proyectos.length > 0) {
+              <div class="card-projects">
+                <span class="projects-count">{{ prog.proyectos.length }} proyectos</span>
+              </div>
+            }
+
+            <!-- Horarios de Disponibilidad -->
+            @if (prog.horariosDisponibles && prog.horariosDisponibles.length > 0) {
+              <div class="card-horarios">
+                <h4>📅 Horarios Disponibles</h4>
+                <div class="horarios-grid">
+                  @for (horario of prog.horariosDisponibles; track horario.dia) {
+                    <div class="horario-item">
+                      <span class="dia">{{ getDiaNombre(horario.dia) }}</span>
+                      <span class="hora">{{ horario.horaInicio }} - {{ horario.horaFin }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="card-actions">
+              <button
+                class="btn-icon btn-schedule"
+                (click)="openHorariosModal(prog)"
+                title="Gestionar Horarios"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </button>
+              <button class="btn-icon btn-edit" (click)="openEditModal(prog)" title="Editar">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button
+                class="btn-icon btn-delete"
+                (click)="deleteProgramador(prog.uid)"
+                title="Eliminar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Modal de edición -->
+  @if (showEditModal) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ selectedProgramador ? 'Editar' : 'Agregar' }} Programador</h2>
+          <button class="btn-close" (click)="closeModal()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form class="modal-form" (ngSubmit)="saveProgramador()">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="formData.displayName" name="displayName" required />
+          </div>
+
+          <div class="form-group">
+            <label>Email *</label>
+            <input
+              type="email"
+              [(ngModel)]="formData.email"
+              name="email"
+              required
+              [disabled]="!!selectedProgramador"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Especialidad</label>
+            <input
+              type="text"
+              [(ngModel)]="formData.especialidad"
+              name="especialidad"
+              placeholder="Ej: Frontend Developer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea
+              [(ngModel)]="formData.descripcion"
+              name="descripcion"
+              rows="4"
+              placeholder="Descripción profesional..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>URL de Foto</label>
+            <input
+              type="url"
+              [(ngModel)]="formData.photoURL"
+              name="photoURL"
+              placeholder="https://..."
+              pattern="https?://.+"
+              title="Ingresa una URL válida (debe comenzar con http:// o https://)"
+            />
+            <small *ngIf="formData.photoURL && !isValidUrl(formData.photoURL)" class="error-text">
+              La URL debe comenzar con http:// o https://
+            </small>
+          </div>
+
+          <div class="form-section">
+            <h3>Redes Sociales</h3>
+
+            <div class="form-group">
+              <label>GitHub</label>
+              <input
+                type="url"
+                [(ngModel)]="formData.redesSociales!.github"
+                name="github"
+                placeholder="https://github.com/usuario"
+                pattern="https?://.+"
+                title="Ingresa una URL válida (debe comenzar con http:// o https://)"
+              />
+              <small *ngIf="formData.redesSociales!.github && !isValidUrl(formData.redesSociales!.github)" class="error-text">
+                La URL debe comenzar con http:// o https://
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label>LinkedIn</label>
+              <input
+                type="url"
+                [(ngModel)]="formData.redesSociales!.linkedin"
+                name="linkedin"
+                placeholder="https://linkedin.com/in/usuario"
+                pattern="https?://.+"
+                title="Ingresa una URL válida (debe comenzar con http:// o https://)"
+              />
+              <small *ngIf="formData.redesSociales!.linkedin && !isValidUrl(formData.redesSociales!.linkedin)" class="error-text">
+                La URL debe comenzar con http:// o https://
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label>Portfolio</label>
+              <input
+                type="url"
+                [(ngModel)]="formData.redesSociales!.portfolio"
+                name="portfolio"
+                placeholder="https://miportfolio.com"
+                pattern="https?://.+"
+                title="Ingresa una URL válida (debe comenzar con http:// o https://)"
+              />
+              <small *ngIf="formData.redesSociales!.portfolio && !isValidUrl(formData.redesSociales!.portfolio)" class="error-text">
+                La URL debe comenzar con http:// o https://
+              </small>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Horarios -->
+  @if (showHorariosModal && selectedProgramador) {
+    <div class="modal-overlay" (click)="closeHorariosModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Gestionar Horarios - {{ selectedProgramador.displayName }}</h2>
+          <button class="btn-close" (click)="closeHorariosModal()">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form class="modal-form horarios-form" (ngSubmit)="saveHorarios()">
+          <p class="form-description">
+            Selecciona los días y horas de disponibilidad para asesorías:
+          </p>
+
+          <div class="horarios-list">
+            @for (horario of horariosFormData; track $index; let i = $index) {
+              <div class="horario-item" [class.activo]="horario.activo">
+                <div class="horario-header">
+                  <label class="checkbox-label">
+                    <input type="checkbox" [checked]="horario.activo" (change)="toggleHorario(i)" />
+                    <span class="dia-nombre">{{ horario.dia | titlecase }}</span>
+                  </label>
+                </div>
+
+                @if (horario.activo) {
+                  <div class="horario-inputs">
+                    <div class="time-input">
+                      <label>Desde:</label>
+                      <input
+                        type="time"
+                        [(ngModel)]="horario.horaInicio"
+                        [name]="'horaInicio' + i"
+                        required
+                      />
+                    </div>
+                    <div class="time-input">
+                      <label>Hasta:</label>
+                      <input
+                        type="time"
+                        [(ngModel)]="horario.horaFin"
+                        [name]="'horaFin' + i"
+                        required
+                      />
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="closeHorariosModal()"
+              [disabled]="loading"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              {{ loading ? 'Guardando...' : 'Guardar Horarios' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Gestión de Usuarios -->
+  @if (showUsuariosModal) {
+    <div class="modal-overlay" (click)="closeUsuariosModal()">
+      <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Gestionar Usuarios y Roles</h2>
+          <button class="close-btn" (click)="closeUsuariosModal()">&times;</button>
+        </div>
+
+        <div class="usuarios-list">
+          @if (todosUsuarios.length === 0) {
+            <p class="empty-message">No hay usuarios registrados</p>
+          } @else {
+            @for (usuario of todosUsuarios; track usuario.uid) {
+              <div class="usuario-item">
+                <div class="usuario-info">
+                  @if (usuario.photoURL) {
+                    <img
+                      [src]="usuario.photoURL"
+                      [alt]="usuario.displayName"
+                      class="avatar-small"
+                    />
+                  } @else {
+                    <div class="avatar-small-placeholder">
+                      {{ usuario.displayName?.charAt(0).toUpperCase() || '?' }}
+                    </div>
+                  }
+                  <div>
+                    <strong>{{ usuario.displayName }}</strong>
+                    <p class="email-small">{{ usuario.email }}</p>
+                  </div>
+                </div>
+
+                <div class="role-selector">
+                  <label>Rol:</label>
+                  <select
+                    [value]="usuario.role"
+                    (change)="cambiarRol(usuario, $any($event.target).value)"
+                    [disabled]="loading"
+                  >
+                    <option value="usuario">Usuario</option>
+                    <option value="programador">Programador</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeUsuariosModal()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
