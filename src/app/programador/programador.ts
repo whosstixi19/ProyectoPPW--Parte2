@@ -9,11 +9,13 @@ import { UserService } from '../services/user.service';
 import { AsesoriaService } from '../services/asesoria.service';
 import { NotificationService } from '../services/notification.service';
 import { Programador, Proyecto, Asesoria, Ausencia, HorarioDisponible } from '../models/user.model';
+import { WhatsappSetupModalComponent } from '../components/whatsapp-setup-modal/whatsapp-setup-modal';
+import { WhatsappSetupService } from '../services/whatsapp-setup.service';
 
 // Componente de perfil del programador - Gestión de proyectos, asesorías, ausencias y horarios
 @Component({
   selector: 'app-programador',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WhatsappSetupModalComponent],
   templateUrl: './programador.html',
   styleUrl: './programador.scss',
 })
@@ -82,6 +84,9 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
 
   // Suscripción a asesorías en tiempo real
   private asesoriasSubscription?: Subscription;
+  
+  // Modal de configuración de WhatsApp
+  showWhatsappModal = false;
 
   // Formulario para agregar/editar proyectos
   formData: Partial<Proyecto> = {
@@ -104,6 +109,7 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private asesoriaService: AsesoriaService,
     private notificationService: NotificationService,
+    private whatsappSetupService: WhatsappSetupService,
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
@@ -136,6 +142,11 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
               if (params['view'] === 'notificaciones') {
                 this.mostrarNotificaciones = true;
               }
+              
+              // Verificar si debe mostrar el modal de configuración de WhatsApp
+              this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+                currentUser.uid
+              );
             }
           } else {
             // Sin UID en params: solo programadores pueden ver su propio perfil aquí
@@ -155,6 +166,11 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
               // Por defecto mostrar proyectos
               this.mostrarProyectos = true;
             }
+            
+            // Verificar si debe mostrar el modal de configuración de WhatsApp
+            this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+              currentUser.uid
+            );
           }
           
           this.loading = false;
@@ -787,5 +803,44 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
     const fin2 = parseInt(h2.horaFin.split(':')[0]);
 
     return (inicio1 < fin2 && fin1 > inicio2);
+  }
+  
+  // Métodos para el modal de WhatsApp
+  async onWhatsappSave(telefono: string) {
+    if (this.programador) {
+      await this.whatsappSetupService.configure(
+        this.programador.uid,
+        telefono
+      );
+      this.showWhatsappModal = false;
+      
+      // Recargar los datos del programador para mostrar el teléfono actualizado
+      await this.loadProgramador();
+      this.cdr.detectChanges();
+    }
+  }
+  
+  onWhatsappPostpone() {
+    if (this.programador) {
+      this.whatsappSetupService.postpone(this.programador.uid);
+      this.showWhatsappModal = false;
+      
+      // Programar para mostrar el modal nuevamente después de 10 minutos
+      setTimeout(() => {
+        if (this.programador) {
+          this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+            this.programador.uid
+          );
+          this.cdr.detectChanges();
+        }
+      }, 10 * 60 * 1000); // 10 minutos
+      
+      this.cdr.detectChanges();
+    }
+  }
+  
+  onWhatsappClose() {
+    this.showWhatsappModal = false;
+    this.cdr.detectChanges();
   }
 }

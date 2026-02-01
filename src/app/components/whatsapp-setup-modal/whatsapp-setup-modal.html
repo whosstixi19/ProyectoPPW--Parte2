@@ -1,0 +1,101 @@
+<div class="modal-overlay" (click)="cerrar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="cerrar()">&times;</button>
+    
+    <div class="modal-header">
+      <div class="whatsapp-icon">📱</div>
+      <h2>Configurar WhatsApp</h2>
+    </div>
+
+    <div class="modal-body">
+      <!-- Mensaje diferente según el rol -->
+      @if (userRole() === 'usuario') {
+        <p class="instruction">
+          Si desea <strong>enviar solicitudes de tutorías y recibir la respuesta</strong> por WhatsApp, siga los siguientes pasos:
+        </p>
+      } @else {
+        <p class="instruction">
+          Si desea <strong>recibir solicitudes de tutorías y enviar la respuesta</strong> por WhatsApp, siga los siguientes pasos:
+        </p>
+      }
+
+      <!-- Paso 1: Agregar número propio -->
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <label>Ingrese su número de WhatsApp:</label>
+          <input 
+            type="tel" 
+            [(ngModel)]="telefono" 
+            (input)="validarTelefono()"
+            placeholder="Ej: 0987654321 o +593987654321"
+            class="phone-input"
+            [class.error]="mostrarError"
+          />
+          @if (mostrarError) {
+            <span class="error-message">{{ mensajeError }}</span>
+          }
+          @if (telefonoValido) {
+            <span class="success-message">✅ Número válido: {{ telefono }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Paso 2: Agregar número de Twilio -->
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <label>Agregue este número a sus contactos de WhatsApp:</label>
+          <div class="copy-container">
+            <input 
+              type="text" 
+              [value]="TWILIO_NUMBER" 
+              readonly 
+              class="readonly-input"
+            />
+            <button class="copy-btn" (click)="copiarNumero()">📋 Copiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 3: Enviar mensaje -->
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <label>Envíe este mensaje al número de Twilio:</label>
+          <div class="copy-container">
+            <input 
+              type="text" 
+              [value]="JOIN_MESSAGE" 
+              readonly 
+              class="readonly-input message-input"
+            />
+            <button class="copy-btn" (click)="copiarMensaje()">📋 Copiar</button>
+          </div>
+          <button class="whatsapp-direct-btn" (click)="abrirWhatsApp()">
+            <span class="whatsapp-logo">💬</span> Abrir WhatsApp y enviar mensaje
+          </button>
+        </div>
+      </div>
+
+      <!-- Nota importante -->
+      <div class="info-box">
+        <strong>📌 Importante:</strong> Debe completar los 3 pasos para recibir notificaciones por WhatsApp. 
+        El sistema enviará automáticamente los mensajes a su número registrado.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="agregarMasTarde()">
+        ⏰ Agregar más tarde
+      </button>
+      <button 
+        class="btn-primary" 
+        [disabled]="!telefonoValido"
+        (click)="agregarTelefono()"
+      >
+        ✅ Guardar número
+      </button>
+    </div>
+  </div>
+</div>

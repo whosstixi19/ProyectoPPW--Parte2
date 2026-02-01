@@ -291,11 +291,12 @@ export class AsesoriasComponent implements OnInit, OnDestroy {
           }
         );
         console.log('✅ Correo enviado al programador');
+        console.log('📱 WhatsApp enviado automáticamente al programador');
       } catch (emailError) {
         console.warn('⚠️ Error al enviar correo:', emailError);
       }
       
-      alert('✅ Solicitud enviada exitosamente. El programador recibirá un correo con los detalles.');
+      alert('✅ Solicitud enviada exitosamente. El programador recibirá un correo y WhatsApp con los detalles.');
       this.closeModal();
       
     } catch (error) {

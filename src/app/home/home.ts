@@ -7,11 +7,13 @@ import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { AsesoriaService } from '../services/asesoria.service';
 import { Programador } from '../models/user.model';
+import { WhatsappSetupModalComponent } from '../components/whatsapp-setup-modal/whatsapp-setup-modal';
+import { WhatsappSetupService } from '../services/whatsapp-setup.service';
 
 // Componente principal - Pantalla de inicio con lista de programadores
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, WhatsappSetupModalComponent],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -28,11 +30,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   // Suscripción para actualizaciones en tiempo real
   private asesoriasSubscription?: Subscription;
+  
+  // Modal de configuración de WhatsApp
+  showWhatsappModal = false;
 
   constructor(
     private userService: UserService,
     private authService: AuthService,
     private asesoriaService: AsesoriaService,
+    private whatsappSetupService: WhatsappSetupService,
     private router: Router,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -59,6 +65,14 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.subscribeToAsesorias(); // Programador: asesorías pendientes de responder
         } else {
           this.subscribeToAsesoriasUsuario(); // Usuario: asesorías propias
+        }
+        
+        // Verificar si debe mostrar el modal de configuración de WhatsApp
+        const currentUser = this.authService.getCurrentUser();
+        if (currentUser) {
+          this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+            currentUser.uid
+          );
         }
         
         this.cdr.detectChanges();
@@ -163,6 +177,44 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Ver perfil público de un programador específico
   verPerfilProgramador(uid: string) {
     this.router.navigate(['/programador'], { queryParams: { uid: uid } });
+  }
+  
+  // Métodos para el modal de WhatsApp
+  async onWhatsappSave(telefono: string) {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      await this.whatsappSetupService.configure(
+        currentUser.uid,
+        telefono
+      );
+      this.showWhatsappModal = false;
+      this.cdr.detectChanges();
+    }
+  }
+  
+  onWhatsappPostpone() {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.whatsappSetupService.postpone(currentUser.uid);
+      this.showWhatsappModal = false;
+      
+      // Programar para mostrar el modal nuevamente después de 10 minutos
+      setTimeout(() => {
+        if (currentUser) {
+          this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+            currentUser.uid
+          );
+          this.cdr.detectChanges();
+        }
+      }, 10 * 60 * 1000); // 10 minutos
+      
+      this.cdr.detectChanges();
+    }
+  }
+  
+  onWhatsappClose() {
+    this.showWhatsappModal = false;
+    this.cdr.detectChanges();
   }
 
   // Convertir día en formato interno a nombre legible

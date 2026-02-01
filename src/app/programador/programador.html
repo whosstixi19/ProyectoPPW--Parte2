@@ -1071,4 +1071,12 @@
   }
 </div>
 
-
+<!-- Modal de configuración de WhatsApp -->
+@if (showWhatsappModal && isOwner) {
+  <app-whatsapp-setup-modal
+    [userRole]="'programador'"
+    (onSave)="onWhatsappSave($event)"
+    (onPostpone)="onWhatsappPostpone()"
+    (onClose)="onWhatsappClose()"
+  ></app-whatsapp-setup-modal>
+}
