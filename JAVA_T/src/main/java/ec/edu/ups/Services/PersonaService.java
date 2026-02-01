@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import ec.edu.ups.model.*;
 import ec.edu.ups.bussiness.GestionPersonas;
+import ec.edu.ups.security.Secured;
+import ec.edu.ups.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -17,6 +19,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 @Path("persona")
+@Secured
 public class PersonaService {
 
 	@Inject

@@ -193,6 +193,15 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- JWT Dependencies -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.4.0</version>
+            <!-- NO usar provided, debe estar en el WAR -->
+            <scope>compile</scope>
+        </dependency>
+
         <!-- Test scope dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -235,6 +244,11 @@
                 <configuration>
                     <!-- Jakarta EE doesn't require web.xml, Maven needs to catch up! -->
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <!-- Incluir todas las dependencias en WEB-INF/lib -->
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                    <packagingExcludes></packagingExcludes>
                 </configuration>
             </plugin>
 

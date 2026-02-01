@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import ec.edu.ups.model.Asesoria;
 import ec.edu.ups.bussiness.GestionAsesorias;
+import ec.edu.ups.security.Secured;
+import ec.edu.ups.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -11,6 +13,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 @Path("asesoria")
+@Secured
 public class AsesoriaService {
 	
 	@Inject

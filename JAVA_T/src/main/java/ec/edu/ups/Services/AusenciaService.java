@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 import ec.edu.ups.model.Ausencia;
 import ec.edu.ups.bussiness.GestionAusencias;
+import ec.edu.ups.security.Secured;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 @Path("ausencia")
+@Secured
 public class AusenciaService {
 	
 	@Inject

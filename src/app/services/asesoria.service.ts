@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import {
   Firestore,
   collection,
@@ -13,13 +14,20 @@ import {
 } from '@angular/fire/firestore';
 import { Asesoria } from '../models/user.model';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 // Servicio para gestionar asesorías - CRUD y consultas en tiempo real
 @Injectable({
   providedIn: 'root',
 })
 export class AsesoriaService {
-  constructor(private firestore: Firestore) {}
+  private apiUrl = 'http://localhost:8080/JAVA_T/api'; // URL del backend Java
+  
+  constructor(
+    private firestore: Firestore,
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
 
   // Crear nueva solicitud de asesoría en Firestore
   async crearAsesoria(asesoria: Omit<Asesoria, 'id' | 'fecha'>): Promise<Asesoria> {
@@ -172,6 +180,61 @@ export class AsesoriaService {
     } catch (error) {
       console.error('Error obteniendo horarios ocupados:', error);
       return [];
+    }
+  }
+
+  // ============ MÉTODOS PARA USAR EL BACKEND JAVA CON JWT ============
+  
+  /**
+   * Obtener todas las asesorías desde el backend Java (con JWT)
+   */
+  async getAsesoriasFromBackend(): Promise<any[]> {
+    try {
+      const headers = this.authService.getAuthHeaders();
+      const response = await this.http.get<any[]>(
+        `${this.apiUrl}/asesoria`,
+        { headers }
+      ).toPromise();
+      return response || [];
+    } catch (error) {
+      console.error('Error obteniendo asesorías del backend:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Crear asesoría en el backend Java (con JWT)
+   */
+  async crearAsesoriaEnBackend(asesoria: any): Promise<any> {
+    try {
+      const headers = this.authService.getAuthHeaders();
+      const response = await this.http.post<any>(
+        `${this.apiUrl}/asesoria`,
+        asesoria,
+        { headers }
+      ).toPromise();
+      return response;
+    } catch (error) {
+      console.error('Error creando asesoría en backend:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Actualizar asesoría en el backend Java (con JWT)
+   */
+  async actualizarAsesoriaEnBackend(id: string, asesoria: any): Promise<any> {
+    try {
+      const headers = this.authService.getAuthHeaders();
+      const response = await this.http.put<any>(
+        `${this.apiUrl}/asesoria/${id}`,
+        asesoria,
+        { headers }
+      ).toPromise();
+      return response;
+    } catch (error) {
+      console.error('Error actualizando asesoría en backend:', error);
+      throw error;
     }
   }
 }

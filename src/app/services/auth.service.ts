@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Usuario, UserRole } from '../models/user.model';
 
@@ -20,23 +21,31 @@ export class AuthService {
   currentUser: Usuario | null = null;
   private authReady = new BehaviorSubject<boolean>(false);
   authReady$ = this.authReady.asObservable();
+  
+  // URL del backend Java
+  private apiUrl = 'http://localhost:8080/JAVA_T/api'; // Ajusta según tu configuración
+  private jwtToken: string | null = null;
 
   constructor(
     private auth: Auth,
     private firestore: Firestore,
+    private http: HttpClient,
   ) {
     this.user$ = user(this.auth);
 
-    // Intentar cargar usuario desde caché primero
+    // Intentar cargar usuario y token desde caché primero
     this.loadFromCache();
 
     // Esperar a que Firebase Auth se inicialice completamente
     onAuthStateChanged(this.auth, async (firebaseUser) => {
       if (firebaseUser) {
         await this.loadUserData(firebaseUser.uid);
+        // Obtener token JWT del backend
+        await this.getJwtToken(firebaseUser.email!);
         this.authReady.next(true);
       } else {
         this.currentUser = null;
+        this.jwtToken = null;
         this.clearCache();
         this.authReady.next(true);
       }
@@ -47,8 +56,12 @@ export class AuthService {
   private loadFromCache(): void {
     try {
       const cachedUser = localStorage.getItem('currentUser');
+      const cachedToken = localStorage.getItem('jwtToken');
       if (cachedUser) {
         this.currentUser = JSON.parse(cachedUser);
+      }
+      if (cachedToken) {
+        this.jwtToken = cachedToken;
       }
     } catch (error) {
       console.error('Error cargando caché:', error);
@@ -58,6 +71,9 @@ export class AuthService {
   private saveToCache(user: Usuario): void {
     try {
       localStorage.setItem('currentUser', JSON.stringify(user));
+      if (this.jwtToken) {
+        localStorage.setItem('jwtToken', this.jwtToken);
+      }
     } catch (error) {
       console.error('Error guardando caché:', error);
     }
@@ -65,6 +81,47 @@ export class AuthService {
 
   private clearCache(): void {
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('jwtToken');
+  }
+
+  /**
+   * Obtiene un token JWT del backend usando el email del usuario
+   */
+  private async getJwtToken(email: string): Promise<void> {
+    try {
+      const response: any = await this.http.post(`${this.apiUrl}/auth/login`, {
+        email: email,
+        firebaseToken: await this.auth.currentUser?.getIdToken()
+      }).toPromise();
+      
+      this.jwtToken = response.token;
+      localStorage.setItem('jwtToken', this.jwtToken!);
+    } catch (error) {
+      console.error('Error obteniendo JWT:', error);
+    }
+  }
+
+  /**
+   * Retorna el token JWT para incluir en las peticiones HTTP
+   */
+  getToken(): string | null {
+    return this.jwtToken;
+  }
+
+  /**
+   * Retorna los headers con el token JWT
+   */
+  getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    if (token) {
+      return new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      });
+    }
+    return new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
   }
 
   // Login con Google
@@ -89,10 +146,14 @@ export class AuthService {
 
         await setDoc(doc(this.firestore, 'usuarios', result.user.uid), newUser);
         this.currentUser = newUser;
+        // Obtener token JWT del backend
+        await this.getJwtToken(newUser.email);
         this.saveToCache(newUser);
         return newUser;
       } else {
         this.currentUser = userDoc.data() as Usuario;
+        // Obtener token JWT del backend
+        await this.getJwtToken(this.currentUser.email);
         this.saveToCache(this.currentUser);
         return this.currentUser;
       }
@@ -119,6 +180,7 @@ export class AuthService {
     try {
       await signOut(this.auth);
       this.currentUser = null;
+      this.jwtToken = null;
       this.clearCache();
     } catch (error) {
       console.error('Error en logout:', error);
