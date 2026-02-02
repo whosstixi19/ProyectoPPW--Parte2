@@ -218,6 +218,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+        	<groupId>ec.edu.ups.est</groupId>
+        	<artifactId>Backend_PruebaJAVA_TixiJ</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
