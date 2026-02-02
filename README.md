@@ -11,93 +11,319 @@
 ## 📋 Tabla de Contenidos
 
 1. [Descripción del Proyecto](#descripción-del-proyecto)
-2. [Seguridad JWT](#seguridad-jwt)
-3. [Sincronización Firebase](#sincronización-firebase)
-4. [Instalación y Configuración](#instalación-y-configuración)
-5. [Solución de Errores Comunes](#solución-de-errores-comunes)
-6. [Características Principales](#características-principales)
-7. [Estructura del Proyecto](#estructura-del-proyecto)
+2. [Arquitectura de Microservicios](#arquitectura-de-microservicios)
+3. [División de Entidades](#división-de-entidades)
+4. [Configuración de PostgreSQL](#configuración-de-postgresql)
+5. [Autenticación con Firebase](#autenticación-con-firebase)
+6. [Servicios de Notificación](#servicios-de-notificación)
+7. [Instalación y Configuración](#instalación-y-configuración)
+8. [Características Principales](#características-principales)
 
 ---
 
 ## 📖 Descripción del Proyecto
 
-Sistema web full-stack desarrollado con **Angular + Java EE + Firebase** para la gestión de portafolios de programadores y solicitudes de asesorías técnicas. La plataforma permite a los usuarios explorar perfiles de desarrolladores, solicitar asesorías personalizadas y gestionar proyectos académicos y profesionales.
+Sistema web full-stack con **arquitectura de microservicios** desarrollado con **Angular 20 + Jakarta/WildFly + Spring Boot + FastAPI + Firebase** para la gestión de portafolios de programadores y solicitudes de asesorías técnicas.
 
-## Caracteristicas Principales
+La plataforma integra 4 backends especializados con autenticación centralizada en Firebase y base de datos PostgreSQL compartida.
 
-### Roles de Usuario
+---
 
-#### Usuario Regular
-- Visualizacion de portafolios de programadores
-- Solicitud de asesorias con fecha y hora especifica
-- Seguimiento del estado de solicitudes (pendiente, aprobada, rechazada)
-- Visualizacion de horarios disponibles por programador
-- **Notificaciones en tiempo real** de respuestas a asesorias
-- Vista dedicada "Mis Asesorias" con contador de respuestas
+## 🏗️ Arquitectura de Microservicios
 
-#### Programador
-- Gestion de portafolio personal
-- Administracion de proyectos (academicos y profesionales)
-- Configuracion de horarios de disponibilidad
-- **Respuesta rapida a solicitudes de asesoria** (aprobar/rechazar)
-- Inclusion de redes sociales y tecnologias
-- **Sistema de notificaciones en tiempo real** para nuevas solicitudes
-- Vista dedicada de notificaciones con navegacion por URL
+### Diagrama de Arquitectura
 
-#### Administrador
-- Gestion completa de usuarios y roles
-- Administracion de programadores
-- Configuracion de horarios para programadores
-- Vista general del sistema
+```
+┌──────────────────────────────────────────────────────┐
+│         Angular Frontend (Puerto 4200)              │
+│  - Firebase SDK (Autenticación)                     │
+│  - EmailJS (Notificaciones Gmail)                   │
+│  - WhatsApp Setup (Guardado en Firestore)           │
+└────────────┬───────────────┬─────────────────────────┘
+             │               │
+    Authorization: Bearer <Firebase-JWT-Token>
+             │               │
+    ┌────────┼───────────────┼──────────────┐
+    │        │               │              │
+    ▼        ▼               ▼              ▼
+┌─────────┬──────────┬──────────┬──────────────┐
+│ Jakarta │  Spring  │ FastAPI  │   Firebase   │
+│ WildFly │   Boot   │  Python  │   Firestore  │
+│  :8080  │  :8081   │  :5000   │    Cloud     │
+│         │          │          │              │
+│ Valida  │ Valida   │ Valida   │ ✅ Genera    │
+│ Token   │ Token    │ Token    │    JWT       │
+└────┬────┴─────┬────┴─────┬────┴──────────────┘
+     │          │          │
+     └──────────┴──────────┘
+              │
+    ┌─────────▼──────────┐
+    │   PostgreSQL       │
+    │   Puerto 5432      │
+    │   DB: proyecto_ppw │
+    └────────────────────┘
+```
 
-### Funcionalidades Tecnicas
+### Tabla Resumen de Backends
 
-1. Autenticacion con Google OAuth
-2. Base de datos en tiempo real con Firebase Firestore
-3. Sistema de roles y permisos
-4. Gestion de horarios con validacion de disponibilidad
-5. Carga de imagenes para proyectos
-6. Sistema de cache para optimizacion de carga
-7. Interfaz responsive con tema oscuro
-8. **Suscripciones en tiempo real (onSnapshot)** para notificaciones
-9. **Query parameters** para navegacion directa a vistas especificas
-10. **Componentes standalone** de Angular 20
-11. **Optimizacion de estilos CSS** (eliminacion de codigo no usado)
-12. **Control de budgets** para tamaño de componentes
+| Backend | Puerto | Responsabilidad | Entidades | Base de Datos | JWT |
+|---------|--------|----------------|-----------|---------------|-----|
+| **Firebase** | Cloud | Autenticación, Usuarios | Usuario (Auth) | Firestore | ✅ Genera |
+| **Jakarta/WildFly** | 8080 | Programadores y Portfolio | Programador, HorarioDisponible, Proyecto | PostgreSQL | ❌ Valida |
+| **Spring Boot** | 8081 | Gestión de Personas | Persona | PostgreSQL | ❌ Valida |
+| **FastAPI** | 5000 | Asesorías | Asesoria, Ausencia | PostgreSQL | ❌ Valida |
 
-## Tecnologias Utilizadas
+---
 
-- Angular 20.3.0
-- Firebase (Authentication y Firestore)
-- TypeScript
-- SCSS
-- RxJS
+## 📦 División de Entidades
 
-## Estructura del Proyecto
+### 🔥 Firebase - Autenticación y Usuarios Base
 
-### Componentes Principales
+**Responsabilidad:** Autenticación centralizada, gestión de usuarios base
 
-- **Home**: Pagina principal con visualizacion de portafolios
-- **Login**: Autenticacion con Google
-- **Admin**: Panel de administracion para gestion de usuarios
-- **Programador**: Panel personal del programador
-- **Asesorias**: Sistema de solicitud y gestion de asesorias
+**Colección Firestore:**
+```javascript
+usuarios/
+├── {uid}
+│   ├── email: string
+│   ├── displayName: string
+│   ├── photoURL: string
+│   ├── role: 'admin' | 'programador' | 'usuario'
+│   ├── telefono?: string  // Para WhatsApp
+│   └── createdAt: timestamp
+```
 
-### Servicios
+**Funciones:**
+- Autenticación con Google OAuth
+- Generación de JWT (1 hora de validez)
+- Almacenamiento de datos de usuario base
+- Gestión de roles
 
-- **AuthService**: Manejo de autenticacion y sesiones con cache en localStorage
-- **UserService**: Operaciones CRUD de usuarios, programadores y proyectos
-- **AsesoriaService**: Gestion de solicitudes de asesoria con suscripciones en tiempo real
-  - `getAsesoriasPendientesRealtime()`: Notificaciones para programadores
-  - `getAsesoriasRespondidasRealtime()`: Notificaciones para usuarios
-  - `enviarNotificacionExterna()`: Placeholder para emails/WhatsApp
-- **CacheService**: Optimizacion de carga con localStorage (5 min TTL)
-- **NotificationService**: 🆕 Simulacion de envio de notificaciones
-  - `simularEnvioCorreo()`: Simula envio de correos electronicos
-  - `simularEnvioWhatsApp()`: Simula envio de mensajes WhatsApp
-  - Genera contenido HTML profesional para emails
-  - Muestra todo el proceso en la consola del navegador con colores y formato
+---
+
+### ☕ Jakarta/WildFly (Puerto 8080) - Portfolio de Programadores
+
+**Responsabilidad:** Gestión completa del portfolio de programadores
+
+**Entidades:**
+
+1. **Programador**
+   - uid (PK) - Referencia a Firebase
+   - email, displayName, photoURL
+   - especialidad, descripcion
+   - redes sociales (github, linkedin, twitter, portfolio)
+
+2. **HorarioDisponible**
+   - id (PK)
+   - programador_uid (FK)
+   - dia, hora_inicio, hora_fin
+   - modalidad (presencial/virtual/hibrida)
+   - activo (boolean)
+
+3. **Proyecto**
+   - id (PK)
+   - programador_uid (FK)
+   - nombre, descripcion, tipo
+   - tecnologias, repositorio, demo
+   - fecha_creacion
+
+**Endpoints:**
+```
+GET    /api/programadores
+POST   /api/programadores
+GET    /api/programadores/{uid}
+GET    /api/programadores/{uid}/horarios
+POST   /api/programadores/{uid}/horarios
+GET    /api/programadores/{uid}/proyectos
+POST   /api/programadores/{uid}/proyectos
+```
+
+---
+
+### 🌱 Spring Boot (Puerto 8081) - Gestión de Personas
+
+**Responsabilidad:** Datos complementarios de personas
+
+**Entidades:**
+
+1. **Persona**
+   - per_cedula (PK)
+   - per_nombre, per_direccion
+   - email, password, enabled
+
+**Endpoints:**
+```
+GET    /api/spring/personas
+POST   /api/spring/personas
+GET    /api/spring/personas/{cedula}
+PUT    /api/spring/personas/{cedula}
+DELETE /api/spring/personas/{cedula}
+```
+
+---
+
+### 🐍 FastAPI (Puerto 5000) - Asesorías
+
+**Responsabilidad:** Flujo completo de solicitudes de asesorías
+
+**Entidades:**
+
+1. **Asesoria**
+   - id (PK)
+   - usuario_uid, usuario_nombre, usuario_email
+   - programador_uid, programador_nombre
+   - tema, descripcion, comentario
+   - fecha_solicitada, hora_solicitada
+   - estado ('pendiente', 'aprobada', 'rechazada')
+   - respuesta, fecha_creacion
+
+2. **Ausencia**
+   - id (PK)
+   - programador_uid
+   - fecha, hora_inicio, hora_fin
+   - motivo
+
+**Endpoints:**
+```
+GET    /api/asesorias
+POST   /api/asesorias
+GET    /api/asesorias/{id}
+PUT    /api/asesorias/{id}
+DELETE /api/asesorias/{id}
+GET    /api/ausencias/{programador_uid}
+POST   /api/ausencias
+```
+
+---
+
+## 🐘 Configuración de PostgreSQL
+
+### Instalación
+
+1. **Descargar PostgreSQL 16:**
+   ```
+   https://www.postgresql.org/download/windows/
+   ```
+
+2. **Durante instalación:**
+   - Puerto: **5432**
+   - Usuario: **postgres**
+   - Password: **admin** (o la que prefieras)
+   - Instalar pgAdmin4 (incluido)
+
+3. **Crear base de datos:**
+   ```sql
+   -- Abrir pgAdmin4 y ejecutar:
+   CREATE DATABASE proyecto_ppw;
+   ```
+
+### Configuración Jakarta/WildFly
+
+**1. Descargar driver PostgreSQL:**
+```bash
+# Descargar postgresql-42.7.1.jar
+https://jdbc.postgresql.org/download/
+```
+
+**2. Configurar datasource en WildFly CLI:**
+```bash
+# Iniciar WildFly y abrir CLI
+cd wildfly-38.0.1.Final/bin
+./jboss-cli.sh --connect
+
+# Agregar driver PostgreSQL
+module add --name=org.postgresql --resources=/ruta/postgresql-42.7.1.jar --dependencies=javax.api,javax.transaction.api
+
+# Agregar datasource
+/subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql,driver-module-name=org.postgresql,driver-class-name=org.postgresql.Driver)
+
+/subsystem=datasources/data-source=PostgresDS:add(jndi-name=java:jboss/datasources/PostgresDS,driver-name=postgresql,connection-url=jdbc:postgresql://localhost:5432/proyecto_ppw,user-name=postgres,password=admin)
+
+/subsystem=datasources/data-source=PostgresDS:enable
+```
+
+**3. Archivo persistence.xml ya configurado** ✅
+
+### Configuración Spring Boot
+
+**application.properties ya configurado** ✅
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/proyecto_ppw
+spring.datasource.username=postgres
+spring.datasource.password=admin
+```
+
+### Configuración FastAPI
+
+**database.py ya configurado** ✅
+```python
+DATABASE_URL=postgresql://postgres:admin@localhost:5432/proyecto_ppw
+```
+
+**Archivo .env:**
+```bash
+DATABASE_URL=postgresql://postgres:admin@localhost:5432/proyecto_ppw
+FIREBASE_CREDENTIALS=./firebase-sa.json
+```
+
+---
+
+## 🔐 Autenticación con Firebase
+
+### Flujo de Autenticación
+
+1. **Usuario inicia sesión en Angular** → Firebase Authentication
+2. **Firebase genera ID Token JWT** (válido 1 hora)
+3. **Angular guarda token** en localStorage
+4. **Interceptor adjunta token** a todas las peticiones HTTP:
+   ```
+   Authorization: Bearer <firebase-token>
+   ```
+5. **Cada backend valida token** con Firebase Admin SDK
+6. **Si válido:** Procesa petición con rol del usuario
+7. **Si inválido:** Retorna 401 Unauthorized
+
+### Estructura del Token JWT (Firebase)
+
+```json
+{
+  "iss": "https://securetoken.google.com/tu-proyecto",
+  "aud": "tu-proyecto",
+  "auth_time": 1738540800,
+  "user_id": "xyz123",
+  "sub": "xyz123",
+  "iat": 1738540800,
+  "exp": 1738544400,
+  "email": "usuario@example.com",
+  "email_verified": true,
+  "firebase": {
+    "identities": {
+      "google.com": ["123456789"]
+    },
+    "sign_in_provider": "google.com"
+  }
+}
+```
+
+### Validación en Backends
+
+**Jakarta/WildFly** - Filtro de validación (próximamente)
+**Spring Boot** - Spring Security Filter (próximamente)
+**FastAPI** - Ya implementado en `auth.py` ✅
+
+```python
+# Backedn-FastApi/app/auth.py
+def verify_firebase_token(credentials: HTTPAuthorizationCredentials):
+    token = credentials.credentials
+    decoded = auth.verify_id_token(token)  # Firebase Admin SDK
+    return decoded
+```
+
+---
+
+## 📧 Servicios de Notificación
+
+### Gmail (EmailJS)
 
 ### Guards
 

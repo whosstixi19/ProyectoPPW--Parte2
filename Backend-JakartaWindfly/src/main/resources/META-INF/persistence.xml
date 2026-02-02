@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0"
+   xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="
+        https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+   <persistence-unit name="JAVA_TPersistenceUnit">
+      <!-- PostgreSQL DataSource configurado en WildFly -->
+      <jta-data-source>java:jboss/datasources/PostgresDS</jta-data-source>
+      <properties>
+         <!-- Auto-actualización del schema (update en producción, create-drop en desarrollo) -->
+         <property name="jakarta.persistence.schema-generation.database.action" value="update"/>
+         
+         <!-- Configuración de Hibernate para PostgreSQL -->
+         <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+         <property name="hibernate.show_sql" value="true" />
+         <property name="hibernate.format_sql" value="true" />
+         
+         <!-- Entidades: Programador, HorarioDisponible, Proyecto -->
+      </properties>
+   </persistence-unit>
+</persistence>
