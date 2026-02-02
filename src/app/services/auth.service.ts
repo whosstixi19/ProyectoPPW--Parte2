@@ -109,6 +109,17 @@ export class AuthService {
   }
 
   /**
+   * Retorna el token de ID de Firebase para autenticación directa
+   */
+  async getIdToken(): Promise<string> {
+    const currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No hay usuario autenticado');
+    }
+    return await currentUser.getIdToken();
+  }
+
+  /**
    * Retorna los headers con el token JWT
    */
   getAuthHeaders(): HttpHeaders {

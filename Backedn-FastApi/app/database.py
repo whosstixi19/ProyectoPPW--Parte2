@@ -7,7 +7,7 @@ import os
 # formato: postgresql://usuario:password@host:puerto/base_de_datos
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:admin@localhost:5432/proyecto_ppw"
+    "postgresql://Proyecto_PPW:root@localhost:5432/proyecto_ppw"
 )
 
 print(f"🔌 Conectando a PostgreSQL: {SQLALCHEMY_DATABASE_URL.split('@')[1]}")

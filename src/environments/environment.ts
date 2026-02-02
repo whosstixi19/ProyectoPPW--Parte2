@@ -16,4 +16,9 @@ export const environment = {
     templateIdRespuesta: 'template_v5wk3ud',
     publicKey: 'jvwOoVxtNR7rXH9kB',
   },
+  api: {
+    jakarta: 'http://localhost:8080/JAVA_T/api',
+    springBoot: 'http://localhost:8081/api/spring',
+    fastApi: 'http://localhost:5000/api',
+  },
 };
