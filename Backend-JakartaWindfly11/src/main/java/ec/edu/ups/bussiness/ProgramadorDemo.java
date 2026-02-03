@@ -6,11 +6,11 @@ import ec.edu.ups.DAO.ProgramadorDAO;
 import ec.edu.ups.model.Programador;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.Singleton;
-import jakarta.ejb.Startup;
+// import jakarta.ejb.Startup;  // DESHABILITADO temporalmente
 import jakarta.inject.Inject;
 
 @Singleton
-@Startup
+// @Startup  // DESHABILITADO para evitar conflictos con datos existentes
 public class ProgramadorDemo {
 	
 	@Inject
@@ -18,6 +18,21 @@ public class ProgramadorDemo {
 	
 	@PostConstruct
 	public void init() {
+		// Verificar si ya existen programadores antes de insertar
+		List<Programador> programadoresExistentes = daoProgramador.getAll();
+		
+		if (programadoresExistentes != null && !programadoresExistentes.isEmpty()) {
+			System.out.println("Ya existen " + programadoresExistentes.size() + " programadores en la base de datos.");
+			for(Programador x : programadoresExistentes) {
+				System.out.println("Programador: " + x.getDisplayName());
+				System.out.println("UID: " + x.getUid());
+				System.out.println("Email: " + x.getEmail());
+				System.out.println("Especialidad: " + x.getEspecialidad());
+			}
+			return; // No insertar duplicados
+		}
+		
+		// Solo insertar si no existen programadores
 		Programador p1 = new Programador();
 		p1.setUid("prog001");
 		p1.setEmail("juan.perez@example.com");

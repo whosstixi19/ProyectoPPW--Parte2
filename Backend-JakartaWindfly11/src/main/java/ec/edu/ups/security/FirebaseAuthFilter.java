@@ -54,6 +54,12 @@ public class FirebaseAuthFilter implements Filter {
             return;
         }
 
+        // ⚠️ MODO DE PRUEBA: DESHABILITAR VALIDACIÓN DE TOKEN
+        System.out.println("⚠️ FILTRO DE SEGURIDAD DESHABILITADO - MODO DE PRUEBA");
+        chain.doFilter(request, response);
+        return;
+
+        /* CÓDIGO ORIGINAL COMENTADO PARA PRUEBAS
         String path = httpRequest.getRequestURI();
         
         // Rutas que no requieren autenticación
@@ -94,6 +100,7 @@ public class FirebaseAuthFilter implements Filter {
             httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             httpResponse.getWriter().write("{\"error\": \"Error interno del servidor\"}");
         }
+        */
     }
 
     @Override
