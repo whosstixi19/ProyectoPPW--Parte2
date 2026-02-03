@@ -75,11 +75,6 @@ export class WhatsappSetupModalComponent implements OnInit {
     alert('📋 Mensaje copiado al portapapeles');
   }
 
-  abrirWhatsApp() {
-    const url = `https://wa.me/${this.TWILIO_NUMBER.replace(/\+/g, '')}?text=${encodeURIComponent(this.JOIN_MESSAGE)}`;
-    window.open(url, '_blank');
-  }
-
   agregarMasTarde() {
     this.onPostpone.emit();
   }
