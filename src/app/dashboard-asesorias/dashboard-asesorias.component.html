@@ -1,0 +1,18 @@
+<div class="dashboard-asesorias">
+  <h2>Gestión de Asesorías</h2>
+  <form (ngSubmit)="registrarDisponibilidad()">
+    <label for="dias">Días Disponibles:</label>
+    <input type="text" id="dias" [(ngModel)]="diasDisponibles" name="dias" placeholder="Ej: Lunes, Martes" required>
+
+    <label for="horarios">Horarios Disponibles:</label>
+    <input type="text" id="horarios" [(ngModel)]="horariosDisponibles" name="horarios" placeholder="Ej: 9:00 - 12:00" required>
+
+    <label for="modalidad">Modalidad:</label>
+    <select id="modalidad" [(ngModel)]="modalidad" name="modalidad" required>
+      <option value="presencial">Presencial</option>
+      <option value="virtual">Virtual</option>
+    </select>
+
+    <button type="submit">Registrar Disponibilidad</button>
+  </form>
+</div>
