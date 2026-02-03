@@ -5,7 +5,7 @@ import { AdminComponent } from './admin/admin';
 import { ProgramadorComponent } from './programador/programador';
 import { AsesoriasComponent } from './asesorias/asesorias';
 import { DashboardComponent } from './dashboard/dashboard';
-import { DashboardAsesoriasComponent } from './dashboard-asesorias/dashboard-asesorias.component';
+import { DashboardAsesoriasComponent } from './dashboard-asesorias/dashboard-asesorias';
 import { authGuard, adminGuard, programadorGuard } from './guards/auth.guard';
 
 export const routes: Routes = [

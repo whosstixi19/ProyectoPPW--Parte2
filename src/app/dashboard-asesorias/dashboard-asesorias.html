@@ -1,0 +1,224 @@
+<div class="dashboard-asesorias-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1>📊 Dashboard de Asesorías</h1>
+    <p class="subtitle">Visualiza el historial y estadísticas de asesorías</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-container">
+    <div class="filtro-grupo">
+      <label for="filtroEstado">Filtrar por Estado:</label>
+      <select
+        id="filtroEstado"
+        [(ngModel)]="filtroEstado"
+        (change)="onFiltroEstadoChange()"
+        class="select-filtro"
+      >
+        <option value="todos">Todos</option>
+        <option value="aprobada">Aprobadas</option>
+        <option value="rechazada">Rechazadas</option>
+        <option value="pendiente">Pendientes</option>
+      </select>
+    </div>
+
+    <div class="filtro-grupo">
+      <label for="filtroTiempo">Filtrar por Tiempo:</label>
+      <select
+        id="filtroTiempo"
+        [(ngModel)]="filtroTiempo"
+        (change)="onFiltroTiempoChange()"
+        class="select-filtro"
+      >
+        <option value="todos">Todas</option>
+        <option value="7dias">Últimos 7 días</option>
+        <option value="30dias">Últimos 30 días</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="estadisticas-container" *ngIf="!cargando">
+    <div class="estadistica-card total">
+      <div class="estadistica-icon">📈</div>
+      <div class="estadistica-content">
+        <h3>Total de Asesorías</h3>
+        <p class="numero-grande">{{ estadisticas.totalAsesorias }}</p>
+      </div>
+    </div>
+
+    <div class="estadistica-card aprobada">
+      <div class="estadistica-icon">✅</div>
+      <div class="estadistica-content">
+        <h3>Aprobadas</h3>
+        <p class="numero-grande">{{ estadisticas.aprobadas }}</p>
+      </div>
+    </div>
+
+    <div class="estadistica-card rechazada">
+      <div class="estadistica-icon">❌</div>
+      <div class="estadistica-content">
+        <h3>Rechazadas</h3>
+        <p class="numero-grande">{{ estadisticas.rechazadas }}</p>
+      </div>
+    </div>
+
+    <div class="estadistica-card pendiente">
+      <div class="estadistica-icon">⏳</div>
+      <div class="estadistica-content">
+        <h3>Pendientes</h3>
+        <p class="numero-grande">{{ estadisticas.pendientes }}</p>
+      </div>
+    </div>
+
+    <div class="estadistica-card tasa">
+      <div class="estadistica-icon">📊</div>
+      <div class="estadistica-content">
+        <h3>Tasa de Aprobación</h3>
+        <p class="numero-grande">{{ estadisticas.tasaAprobacion }}%</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cargando -->
+  <div class="cargando" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="graficos-container" *ngIf="!cargando && chartEstados">
+    <div class="grafico-card">
+      <h2>Estados de Asesorías</h2>
+      <canvas
+        *ngIf="chartEstados"
+        baseChart
+        [type]="chartEstados.type"
+        [data]="chartEstados.data"
+        [options]="chartEstados.options"
+      ></canvas>
+    </div>
+
+    <div class="grafico-card">
+      <h2>Asesorías por Período</h2>
+      <canvas
+        *ngIf="chartTiempo"
+        baseChart
+        [type]="chartTiempo.type"
+        [data]="chartTiempo.data"
+        [options]="chartTiempo.options"
+      ></canvas>
+    </div>
+  </div>
+
+  <!-- Gráfico de Programadores (solo si es admin) -->
+  <div class="graficos-container" *ngIf="!cargando && chartProgramadores">
+    <div class="grafico-card-full">
+      <h2>Asesorías por Programador</h2>
+      <canvas
+        *ngIf="chartProgramadores"
+        baseChart
+        [type]="chartProgramadores.type"
+        [data]="chartProgramadores.data"
+        [options]="chartProgramadores.options"
+      ></canvas>
+    </div>
+  </div>
+
+  <!-- Historial de Asesorías -->
+  <div class="historial-container" *ngIf="!cargando && asesorias.length > 0">
+    <h2>Historial Detallado</h2>
+
+    <div class="tabla-responsiva">
+      <table class="tabla-asesorias">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th *ngIf="esAdminOProgramador">Usuario</th>
+            <th *ngIf="!esAdminOProgramador">Programador</th>
+            <th>Tema</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container
+            *ngFor="let asesoria of (filtroEstado !== 'todos' || filtroTiempo !== 'todos' ? (asesorias | slice : 0 : 10) : asesorias | slice : 0 : 10)"
+          >
+            <tr>
+              <td class="fecha">
+                {{ obtenerFechaFormato(asesoria.fecha) }}
+              </td>
+              <td *ngIf="esAdminOProgramador" class="usuario">
+                {{ asesoria.usuarioNombre }}
+              </td>
+              <td *ngIf="!esAdminOProgramador" class="programador">
+                {{ asesoria.programadorNombre }}
+              </td>
+              <td class="tema">
+                {{ asesoria.tema }}
+                <p class="descripcion-corta">{{ asesoria.descripcion }}</p>
+              </td>
+              <td class="estado">
+                <span [ngClass]="'badge ' + obtenerEstiloEstado(asesoria.estado)">
+                  {{ asesoria.estado | uppercase }}
+                </span>
+              </td>
+              <td class="acciones">
+                <button
+                  class="btn-ver-detalles"
+                  title="Ver detalles"
+                  (click)="toggleDetalles(asesoria.id)"
+                >
+                  👁️
+                </button>
+              </td>
+            </tr>
+            <tr
+              class="detalles-row"
+              *ngIf="detallesExpandidos[asesoria.id!]"
+            >
+              <td colspan="6" class="detalles-content">
+                <div class="detalles-grid">
+                  <div class="detalle-item">
+                    <label>Email:</label>
+                    <p>{{ asesoria.usuarioEmail }}</p>
+                  </div>
+                  <div class="detalle-item">
+                    <label>Fecha Solicitada:</label>
+                    <p>{{ asesoria.fechaSolicitada }}</p>
+                  </div>
+                  <div class="detalle-item">
+                    <label>Hora Solicitada:</label>
+                    <p>{{ asesoria.horaSolicitada }}</p>
+                  </div>
+                  <div class="detalle-item" *ngIf="asesoria.respuesta">
+                    <label>Respuesta:</label>
+                    <p>{{ asesoria.respuesta }}</p>
+                  </div>
+                  <div class="detalle-item" *ngIf="asesoria.comentario">
+                    <label>Comentario:</label>
+                    <p>{{ asesoria.comentario }}</p>
+                  </div>
+                  <div class="detalle-item" *ngIf="asesoria.fechaRespuesta">
+                    <label>Fecha de Respuesta:</label>
+                    <p>{{ obtenerFechaFormato(asesoria.fechaRespuesta) }}</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="info-asesorias" *ngIf="asesorias.length > 10">
+      Mostrando 10 de {{ asesorias.length }} asesorías
+    </p>
+  </div>
+
+  <!-- Sin datos -->
+  <div class="sin-datos" *ngIf="!cargando && asesorias.length === 0">
+    <p>📭 No hay asesorías disponibles</p>
+  </div>
+</div>
