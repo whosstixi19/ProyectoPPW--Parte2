@@ -18,7 +18,7 @@ export interface HorarioDisponible {
   providedIn: 'root',
 })
 export class HorarioService {
-  private apiUrl = `${environment.api.jakarta}/horarios`;
+  private apiUrl = `${environment.api.jakarta}/horario`; // Cambio de horarios a horario
 
   constructor(
     private http: HttpClient,

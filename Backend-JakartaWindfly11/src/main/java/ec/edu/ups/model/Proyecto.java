@@ -36,6 +36,9 @@ public class Proyecto {
 
     @Column(name = "imagenes")
     private String imagenes;
+    
+    @Column(name = "programador_uid")
+    private String programadorUid;
 
     public Proyecto() {
     }
@@ -120,5 +123,13 @@ public class Proyecto {
 
     public void setImagenes(String imagenes) {
         this.imagenes = imagenes;
+    }
+    
+    public String getProgramadorUid() {
+        return programadorUid;
+    }
+
+    public void setProgramadorUid(String programadorUid) {
+        this.programadorUid = programadorUid;
     }
 }

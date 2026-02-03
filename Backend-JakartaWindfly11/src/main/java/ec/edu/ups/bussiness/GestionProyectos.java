@@ -38,4 +38,11 @@ public class GestionProyectos {
 
 	    daoProyecto.update(proyecto);
 	}
+	
+	public List<Proyecto> getProyectosByProgramador(String programadorUid) throws Exception {
+		if(programadorUid == null || programadorUid.isEmpty())
+			throw new Exception("programadorUid requerido");
+		
+		return daoProyecto.getByProgramador(programadorUid);
+	}
 }

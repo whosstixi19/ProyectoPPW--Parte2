@@ -33,4 +33,11 @@ public class HorarioDisponibleDAO {
 		TypedQuery<HorarioDisponible> q = em.createQuery(jpql, HorarioDisponible.class);
 		return q.getResultList();
 	}
+	
+	public List<HorarioDisponible> getByProgramador(String programadorUid) {
+		String jpql = "SELECT h FROM HorarioDisponible h WHERE h.programadorUid = :programadorUid";
+		TypedQuery<HorarioDisponible> q = em.createQuery(jpql, HorarioDisponible.class);
+		q.setParameter("programadorUid", programadorUid);
+		return q.getResultList();
+	}
 }

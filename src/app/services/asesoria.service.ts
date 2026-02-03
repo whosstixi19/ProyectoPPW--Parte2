@@ -15,13 +15,14 @@ import {
 import { Asesoria } from '../models/user.model';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 // Servicio para gestionar asesorías - CRUD y consultas en tiempo real
 @Injectable({
   providedIn: 'root',
 })
 export class AsesoriaService {
-  private apiUrl = 'http://localhost:8080/JAVA_T/api'; // URL del backend Java
+  private apiUrl = environment.api.fastApi; // URL del backend FastAPI
   
   constructor(
     private firestore: Firestore,

@@ -53,6 +53,26 @@ public class ProyectoService {
 		return Response.ok(p).build();
 	}
 	
+	@GET
+	@Path("/programador/{programadorUid}")
+	@Produces("application/json")
+	public Response getProyectosByProgramador(@PathParam("programadorUid") String programadorUid) {
+		List<Proyecto> proyectos;
+		try {
+			proyectos = gp.getProyectosByProgramador(programadorUid);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			Error error = new Error(
+					500,
+					"Error interno",
+					e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error).build();
+		}
+		
+		return Response.ok(proyectos).build();
+	}
+	
 	@POST
 	@Consumes("application/json")
 	@Produces("application/json")

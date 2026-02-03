@@ -1,40 +1,62 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
+from datetime import datetime
 
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+# ========== Schemas para Asesoría ==========
 
-class UsuarioBase(BaseModel):
-    nombre: str
-    mail: str = Field(..., alias="email")                 # acepta "email"
-    rol: str
-    prog_id: Optional[int] = Field(None, alias="programadorId") # acepta "programadorId"
-    foto_url: Optional[str] = Field(None, alias="fotoUrl")      # acepta "fotoUrl"
+class AsesoriaBase(BaseModel):
+    usuario_uid: str
+    usuario_nombre: str
+    usuario_email: str
+    programador_uid: str
+    programador_nombre: str
+    tema: str
+    descripcion: str
+    comentario: Optional[str] = None
+    fecha_solicitada: str  # YYYY-MM-DD
+    hora_solicitada: str   # HH:mm
+    estado: str = "pendiente"
+    respuesta: Optional[str] = None
 
-    model_config = ConfigDict(
-        populate_by_name=True,  # permite enviar mail o email, prog_id o programadorId...
-        from_attributes=True
-    )
-
-class UsuarioCreate(UsuarioBase):
+class AsesoriaCreate(AsesoriaBase):
     pass
 
-class UsuarioUpdate(BaseModel):
-    nombre: Optional[str] = None
-    mail: Optional[str] = Field(None, alias="email")
-    rol: Optional[str] = None
-    prog_id: Optional[int] = Field(None, alias="programadorId")
-    foto_url: Optional[str] = Field(None, alias="fotoUrl")
+class AsesoriaUpdate(BaseModel):
+    tema: Optional[str] = None
+    descripcion: Optional[str] = None
+    comentario: Optional[str] = None
+    fecha_solicitada: Optional[str] = None
+    hora_solicitada: Optional[str] = None
+    estado: Optional[str] = None
+    respuesta: Optional[str] = None
 
-    model_config = ConfigDict(populate_by_name=True)
-
-class UsuarioOut(BaseModel):
+class AsesoriaOut(AsesoriaBase):
     id: int
-    nombre: str
-    mail: str
-    rol: str
-    prog_id: Optional[int] = None
-    foto_url: Optional[str] = None
+    fecha_creacion: datetime
+    fecha_respuesta: Optional[datetime] = None
+    
+    model_config = ConfigDict(from_attributes=True)
 
+# ========== Schemas para Ausencia ==========
+
+class AusenciaBase(BaseModel):
+    programador_uid: str
+    fecha: str          # YYYY-MM-DD
+    hora_inicio: str    # HH:mm
+    hora_fin: str       # HH:mm
+    motivo: Optional[str] = None
+
+class AusenciaCreate(AusenciaBase):
+    pass
+
+class AusenciaUpdate(BaseModel):
+    fecha: Optional[str] = None
+    hora_inicio: Optional[str] = None
+    hora_fin: Optional[str] = None
+    motivo: Optional[str] = None
+
+class AusenciaOut(AusenciaBase):
+    id: int
+    
     model_config = ConfigDict(from_attributes=True)
 

@@ -33,4 +33,11 @@ public class ProyectoDAO {
 		TypedQuery<Proyecto> q = em.createQuery(jpql, Proyecto.class);
 		return q.getResultList();
 	}
+	
+	public List<Proyecto> getByProgramador(String programadorUid) {
+		String jpql = "SELECT p FROM Proyecto p WHERE p.programadorUid = :programadorUid";
+		TypedQuery<Proyecto> q = em.createQuery(jpql, Proyecto.class);
+		q.setParameter("programadorUid", programadorUid);
+		return q.getResultList();
+	}
 }

@@ -38,4 +38,11 @@ public class GestionHorarios {
 
 	    daoHorario.update(horario);
 	}
+	
+	public List<HorarioDisponible> getHorariosByProgramador(String programadorUid) throws Exception {
+		if(programadorUid == null || programadorUid.isEmpty())
+			throw new Exception("programadorUid requerido");
+		
+		return daoHorario.getByProgramador(programadorUid);
+	}
 }

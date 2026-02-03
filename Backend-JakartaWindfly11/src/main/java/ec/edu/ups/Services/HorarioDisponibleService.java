@@ -53,6 +53,26 @@ public class HorarioDisponibleService {
 		return Response.ok(h).build();
 	}
 	
+	@GET
+	@Path("/programador/{programadorUid}")
+	@Produces("application/json")
+	public Response getHorariosByProgramador(@PathParam("programadorUid") String programadorUid) {
+		List<HorarioDisponible> horarios;
+		try {
+			horarios = gh.getHorariosByProgramador(programadorUid);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			Error error = new Error(
+					500,
+					"Error interno",
+					e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(error).build();
+		}
+		
+		return Response.ok(horarios).build();
+	}
+	
 	@POST
 	@Consumes("application/json")
 	@Produces("application/json")

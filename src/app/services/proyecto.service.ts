@@ -19,7 +19,7 @@ export interface Proyecto {
   providedIn: 'root',
 })
 export class ProyectoService {
-  private apiUrl = `${environment.api.jakarta}/proyectos`;
+  private apiUrl = `${environment.api.jakarta}/proyecto`; // Cambio de proyectos a proyecto
 
   constructor(
     private http: HttpClient,
