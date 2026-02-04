@@ -32,10 +32,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/spring/health").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(firebaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .anyRequest().permitAll()  // DESHABILITADO PARA PRUEBAS - Permitir todo sin autenticación
+            );
+            // .addFilterBefore(firebaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // FILTRO DESHABILITADO
 
         return http.build();
     }

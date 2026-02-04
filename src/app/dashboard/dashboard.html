@@ -1,0 +1,104 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">
+        <span class="icon">📊</span>
+        Dashboard
+      </h1>
+      <div class="user-info">
+        <span class="user-role">{{ isProgramador ? '👨‍💻 Programador' : '👤 Usuario' }}</span>
+        <span class="user-name">{{ currentUser?.displayName || currentUser?.email }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando dashboard...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading" class="dashboard-content">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stat-total">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ estadisticas?.totalAsesorias || 0 }}</span>
+          <span class="stat-label">Total Asesorías</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ estadisticas?.pendientes || 0 }}</span>
+          <span class="stat-label">Pendientes</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-approved">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ estadisticas?.aprobadas || 0 }}</span>
+          <span class="stat-label">Aprobadas</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-rejected">
+        <div class="stat-icon">❌</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ estadisticas?.rechazadas || 0 }}</span>
+          <span class="stat-label">Rechazadas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid" *ngIf="asesorias.length > 0">
+      <!-- Chart Estado -->
+      <div class="chart-card">
+        <h3 class="chart-title">Estado de Asesorías</h3>
+        <div class="chart-container">
+          <canvas id="chartEstado"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart Programador (solo usuarios) -->
+      <div class="chart-card" *ngIf="isUsuario">
+        <h3 class="chart-title">Por Programador</h3>
+        <div class="chart-container">
+          <canvas id="chartProgramador"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart Tendencia -->
+      <div class="chart-card chart-wide">
+        <h3 class="chart-title">Tendencia Mensual</h3>
+        <div class="chart-container">
+          <canvas id="chartTendencia"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart Temas -->
+      <div class="chart-card">
+        <h3 class="chart-title">Temas Más Solicitados</h3>
+        <div class="chart-container">
+          <canvas id="chartTemas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Data Message -->
+    <div *ngIf="asesorias.length === 0" class="no-data">
+      <div class="no-data-icon">📭</div>
+      <h3>No hay asesorías registradas</h3>
+      <p>{{ isProgramador ? 'Aún no tienes asesorías asignadas' : 'Solicita tu primera asesoría' }}</p>
+      <button class="btn-primary" *ngIf="!isProgramador" (click)="router.navigate(['/asesorias'])">
+        Solicitar Asesoría
+      </button>
+    </div>
+  </div>
+</div>

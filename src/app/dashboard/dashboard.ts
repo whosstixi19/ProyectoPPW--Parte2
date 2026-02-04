@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private asesoriaService: AsesoriaService,
     private userService: UserService,
-    private router: Router
+    public router: Router
   ) {}
 
   ngOnInit(): void {
