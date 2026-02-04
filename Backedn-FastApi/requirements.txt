@@ -2,3 +2,4 @@ fastapi
 uvicorn
 SQLAlchemy
 psycopg2-binary
+firebase-admin

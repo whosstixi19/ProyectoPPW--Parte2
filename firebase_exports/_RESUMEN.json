@@ -1,0 +1,27 @@
+{
+  "fecha_exportacion": "2026-02-04T15:59:33.154630",
+  "total_colecciones": 2,
+  "total_documentos": 34,
+  "colecciones": {
+    "asesorias": {
+      "count": 24,
+      "sample_keys": [
+        "47SZBNB9YOSWMlLm14dB",
+        "63Wgp646Z20W5TeITPXM",
+        "6CQbL7iOkEPwPZOGNQbs",
+        "6Li5AhdyX975rgch5XG5",
+        "GDXcfL3e9a3Xi7TvQwN2"
+      ]
+    },
+    "usuarios": {
+      "count": 10,
+      "sample_keys": [
+        "7Hk2A5B3LxTVqlLlN51sIiMuM8F2",
+        "NQVCu3UqskUNvrwneM2Hxmq1MSd2",
+        "O6zb9V7W9GQ0HG0v3hZvG7afeLH3",
+        "RVuBC6WldnXL5BKuMWSGUtG0ww53",
+        "aaiLeHNvsEbQJEFixDP7oky3Smg1"
+      ]
+    }
+  }
+}
