@@ -1,9 +1,6 @@
 package ec.edu.ups.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "proyectos")
@@ -13,12 +10,25 @@ public class Proyecto {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
     @Column(name = "descripcion")
     private String descripcion;
 
+    @Column(name = "fecha_inicio")
+    private String fechaInicio;
+
+    @Column(name = "fecha_fin")
+    private String fechaFin;
+
+    @Column(name = "estado")
+    private String estado;
+
+    @Column(name = "programador_id")
+    private Integer programadorId;
+
+    // Campos antiguos de Firestore (opcionales, pueden ser null)
     @Column(name = "tipo")
     private String tipo;
 
@@ -36,23 +46,11 @@ public class Proyecto {
 
     @Column(name = "imagenes")
     private String imagenes;
-    
-    @Column(name = "programador_uid")
-    private String programadorUid;
 
     public Proyecto() {
     }
 
-    public Proyecto(String id, String nombre, String descripcion, String tipo,
-                    String participacion, String tecnologias) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.tipo = tipo;
-        this.participacion = participacion;
-        this.tecnologias = tecnologias;
-    }
-
+    // Getters y Setters
     public String getId() {
         return id;
     }
@@ -75,6 +73,38 @@ public class Proyecto {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(String fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public String getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(String fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public Integer getProgramadorId() {
+        return programadorId;
+    }
+
+    public void setProgramadorId(Integer programadorId) {
+        this.programadorId = programadorId;
     }
 
     public String getTipo() {
@@ -123,13 +153,5 @@ public class Proyecto {
 
     public void setImagenes(String imagenes) {
         this.imagenes = imagenes;
-    }
-    
-    public String getProgramadorUid() {
-        return programadorUid;
-    }
-
-    public void setProgramadorUid(String programadorUid) {
-        this.programadorUid = programadorUid;
     }
 }

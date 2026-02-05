@@ -27,7 +27,7 @@ public class HorarioDisponibleService {
 	@GET
 	@Path("/{id}")
 	@Produces("application/json")
-	public Response getHorario(@PathParam("id") Long id) {
+	public Response getHorario(@PathParam("id") Integer id) {
 		HorarioDisponible h;
 		try {
 			h = gh.getHorario(id);
@@ -101,7 +101,7 @@ public class HorarioDisponibleService {
 	@Path("/{id}")
 	@Consumes("application/json")
 	@Produces("application/json")
-	public Response updateHorario(@PathParam("id") Long id, HorarioDisponible horario, @Context UriInfo uriInfo) {
+	public Response updateHorario(@PathParam("id") Integer id, HorarioDisponible horario, @Context UriInfo uriInfo) {
 		try {
 			if(horario.getId() != null && !id.equals(horario.getId())) {
 				Error error = new Error(

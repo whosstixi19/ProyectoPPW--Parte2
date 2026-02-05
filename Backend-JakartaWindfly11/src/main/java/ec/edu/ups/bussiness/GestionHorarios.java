@@ -17,7 +17,7 @@ public class GestionHorarios {
 		return daoHorario.getAll();
 	}
 	
-	public HorarioDisponible getHorario(Long id) throws Exception {
+	public HorarioDisponible getHorario(Integer id) throws Exception {
 		if(id == null)
 			throw new Exception("Parámetro incorrecto");
 		

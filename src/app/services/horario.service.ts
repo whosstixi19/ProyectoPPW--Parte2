@@ -7,10 +7,11 @@ import { switchMap } from 'rxjs/operators';
 
 export interface HorarioDisponible {
   id?: number;
-  programadorId: number;
-  diaSemana: string;
+  programadorUid: string;
+  dia: string;
   horaInicio: string;
   horaFin: string;
+  activo: boolean;
   disponible: boolean;
 }
 
@@ -32,8 +33,8 @@ export class HorarioService {
     return this.http.get<HorarioDisponible[]>(this.apiUrl);
   }
 
-  getHorariosByProgramador(programadorId: number): Observable<HorarioDisponible[]> {
-    return this.http.get<HorarioDisponible[]>(`${this.apiUrl}/programador/${programadorId}`);
+  getHorariosByProgramador(programadorUid: string): Observable<HorarioDisponible[]> {
+    return this.http.get<HorarioDisponible[]>(`${this.apiUrl}/programador/${programadorUid}`);
   }
 
   createHorario(horario: HorarioDisponible): Observable<HorarioDisponible> {

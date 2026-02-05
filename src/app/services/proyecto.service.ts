@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { switchMap } from 'rxjs/operators';
 
 export interface Proyecto {
-  id?: number;
+  id?: string;
   nombre: string;
   descripcion: string;
   fechaInicio: string;
@@ -33,23 +33,23 @@ export class ProyectoService {
     return this.http.get<Proyecto[]>(this.apiUrl);
   }
 
-  getProyecto(id: number): Observable<Proyecto> {
+  getProyecto(id: string): Observable<Proyecto> {
     return this.http.get<Proyecto>(`${this.apiUrl}/${id}`);
   }
 
   getProyectosByProgramador(programadorId: number): Observable<Proyecto[]> {
-    return this.http.get<Proyecto[]>(`${this.apiUrl}/programador/${programadorId}`);
+    return this.http.get<Proyecto[]>(`${this.apiUrl}/programador-id/${programadorId}`);
   }
 
   createProyecto(proyecto: Proyecto): Observable<Proyecto> {
     return this.http.post<Proyecto>(this.apiUrl, proyecto);
   }
 
-  updateProyecto(id: number, proyecto: Proyecto): Observable<Proyecto> {
+  updateProyecto(id: string, proyecto: Proyecto): Observable<Proyecto> {
     return this.http.put<Proyecto>(`${this.apiUrl}/${id}`, proyecto);
   }
 
-  deleteProyecto(id: number): Observable<void> {
+  deleteProyecto(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

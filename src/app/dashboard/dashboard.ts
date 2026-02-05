@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -52,7 +52,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private asesoriaService: AsesoriaService,
     private userService: UserService,
-    public router: Router
+    public router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -62,8 +63,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     // Crear gráficos después de que la vista esté inicializada
     if (this.datosListos && this.asesorias.length > 0) {
-      console.log('Vista inicializada, creando gráficos...');
-      setTimeout(() => this.crearGraficos(), 200);
+      console.log('Vista inicializada, intentando crear gráficos...');
+      this.intentarCrearGraficos();
     }
   }
 
@@ -132,13 +133,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log('Estadísticas calculadas:', this.estadisticas);
       
       this.datosListos = true;
+      this.loading = false;
+      
+      // Forzar detección de cambios para renderizar el DOM
+      this.cdr.detectChanges();
       
       // Crear gráficos después de que el DOM esté listo
       if (this.asesorias.length > 0) {
-        setTimeout(() => {
-          console.log('Intentando crear gráficos...');
-          this.crearGraficos();
-        }, 1000);
+        console.log('Datos listos, preparando gráficos...');
+        this.intentarCrearGraficos();
       } else {
         console.log('No hay asesorías, saltando creación de gráficos');
       }
@@ -146,10 +149,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     } catch (error) {
       console.error('Error cargando datos del dashboard:', error);
       alert('Error cargando el dashboard: ' + error);
-    } finally {
-      // Siempre desactivar loading, incluso si hay error
       this.loading = false;
-      console.log('Loading finalizado');
     }
   }
 
@@ -217,6 +217,27 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.estadisticas = stats;
   }
 
+  /**
+   * Intenta crear los gráficos con reintentos si el DOM no está listo
+   */
+  intentarCrearGraficos(intentos: number = 0): void {
+    const maxIntentos = 10;
+    const delay = 150;
+
+    // Verificar si al menos un canvas está disponible
+    const canvas = document.getElementById('chartEstado');
+    
+    if (canvas) {
+      console.log('✅ DOM listo, creando gráficos...');
+      this.crearGraficos();
+    } else if (intentos < maxIntentos) {
+      console.log(`⏳ DOM no listo, reintentando (${intentos + 1}/${maxIntentos})...`);
+      setTimeout(() => this.intentarCrearGraficos(intentos + 1), delay);
+    } else {
+      console.error('❌ No se pudo crear los gráficos: Canvas no encontrado después de múltiples intentos');
+    }
+  }
+
   crearGraficos(): void {
     try {
       console.log('Iniciando creación de gráficos...');
@@ -226,9 +247,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       this.crearGraficoTendencia();
       this.crearGraficoTemas();
-      console.log('Gráficos creados exitosamente');
+      console.log('✅ Gráficos creados exitosamente');
     } catch (error) {
-      console.error('Error creando gráficos:', error);
+      console.error('❌ Error creando gráficos:', error);
     }
   }
 
@@ -519,6 +540,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   volver(): void {
+    if (this.isProgramador) {
+      this.router.navigate(['/programador']);
+    } else {
+      this.router.navigate(['/asesorias']);
+    }
+  }
+
+  irAInicio(): void {
+    // Ir a la página de inicio
+    this.router.navigate(['/inicio']);
+  }
+
+  irAPerfil(): void {
+    // Ir al panel principal según el rol
     if (this.isProgramador) {
       this.router.navigate(['/programador']);
     } else {

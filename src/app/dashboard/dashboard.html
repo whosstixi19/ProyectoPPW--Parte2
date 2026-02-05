@@ -7,6 +7,14 @@
         Dashboard
       </h1>
       <div class="header-actions">
+        <button class="btn-nav" (click)="irAInicio()" title="Ir a Inicio">
+          <span class="icon">🏠</span>
+          Inicio
+        </button>
+        <button class="btn-nav" (click)="irAPerfil()" title="Ver Perfil">
+          <span class="icon">👤</span>
+          Perfil
+        </button>
         <button class="btn-refresh" (click)="recargarDashboard()" [disabled]="loading" title="Recargar gráficos">
           <span class="refresh-icon">🔄</span>
           Recargar

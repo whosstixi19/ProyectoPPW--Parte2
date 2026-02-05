@@ -18,7 +18,7 @@ public class GestionProyectos {
 	}
 	
 	public Proyecto getProyecto(String id) throws Exception {
-		if(id.isEmpty())
+		if(id == null || id.isEmpty())
 			throw new Exception("Parámetro incorrecto");
 		
 		Proyecto p = daoProyecto.read(id);
@@ -44,5 +44,12 @@ public class GestionProyectos {
 			throw new Exception("programadorUid requerido");
 		
 		return daoProyecto.getByProgramador(programadorUid);
+	}
+	
+	public List<Proyecto> getProyectosByProgramadorId(Integer programadorId) throws Exception {
+		if(programadorId == null)
+			throw new Exception("programadorId requerido");
+		
+		return daoProyecto.getByProgramadorId(programadorId);
 	}
 }

@@ -1,11 +1,6 @@
 package ec.edu.ups.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "horarios_disponibles")
@@ -14,39 +9,43 @@ public class HorarioDisponible {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private Integer id;
 
-    @Column(name = "dia")
+    @Column(name = "programador_uid", nullable = false)
+    private String programadorUid;
+
+    @Column(name = "dia", nullable = false)
     private String dia;
 
-    @Column(name = "hora_inicio")
+    @Column(name = "hora_inicio", nullable = false)
     private String horaInicio;
 
-    @Column(name = "hora_fin")
+    @Column(name = "hora_fin", nullable = false)
     private String horaFin;
 
     @Column(name = "activo")
-    private boolean activo;
+    private Boolean activo;
 
-    @Column(name = "programador_uid")
-    private String programadorUid;
+    @Column(name = "disponible")
+    private Boolean disponible;
 
     public HorarioDisponible() {
     }
 
-    public HorarioDisponible(String dia, String horaInicio, String horaFin, boolean activo) {
-        this.dia = dia;
-        this.horaInicio = horaInicio;
-        this.horaFin = horaFin;
-        this.activo = activo;
-    }
-
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getProgramadorUid() {
+        return programadorUid;
+    }
+
+    public void setProgramadorUid(String programadorUid) {
+        this.programadorUid = programadorUid;
     }
 
     public String getDia() {
@@ -73,19 +72,19 @@ public class HorarioDisponible {
         this.horaFin = horaFin;
     }
 
-    public boolean isActivo() {
+    public Boolean getActivo() {
         return activo;
     }
 
-    public void setActivo(boolean activo) {
+    public void setActivo(Boolean activo) {
         this.activo = activo;
     }
 
-    public String getProgramadorUid() {
-        return programadorUid;
+    public Boolean getDisponible() {
+        return disponible;
     }
 
-    public void setProgramadorUid(String programadorUid) {
-        this.programadorUid = programadorUid;
+    public void setDisponible(Boolean disponible) {
+        this.disponible = disponible;
     }
 }
