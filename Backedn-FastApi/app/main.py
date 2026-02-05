@@ -40,8 +40,7 @@ def get_ausencia_service(db: Session = Depends(database.get_db)):
 
 @app.get("/api/asesorias", response_model=List[schemas.AsesoriaOut])
 def get_asesorias(
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Obtener todas las asesorías"""
     return asesoria_service.get_all()
@@ -49,8 +48,7 @@ def get_asesorias(
 @app.get("/api/asesorias/{asesoria_id}", response_model=schemas.AsesoriaOut)
 def get_asesoria(
     asesoria_id: int,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Obtener una asesoría por ID"""
     asesoria = asesoria_service.get_by_id(asesoria_id)
@@ -61,8 +59,7 @@ def get_asesoria(
 @app.get("/api/asesorias/usuario/{usuario_uid}", response_model=List[schemas.AsesoriaOut])
 def get_asesorias_usuario(
     usuario_uid: str,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Obtener todas las asesorías de un usuario"""
     return asesoria_service.get_by_usuario(usuario_uid)
@@ -70,8 +67,7 @@ def get_asesorias_usuario(
 @app.get("/api/asesorias/programador/{programador_uid}", response_model=List[schemas.AsesoriaOut])
 def get_asesorias_programador(
     programador_uid: str,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Obtener todas las asesorías de un programador"""
     return asesoria_service.get_by_programador(programador_uid)
@@ -79,8 +75,7 @@ def get_asesorias_programador(
 @app.get("/api/asesorias/programador/{programador_uid}/pendientes", response_model=List[schemas.AsesoriaOut])
 def get_asesorias_pendientes(
     programador_uid: str,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Obtener asesorías pendientes de un programador"""
     return asesoria_service.get_pendientes_by_programador(programador_uid)
@@ -88,8 +83,7 @@ def get_asesorias_pendientes(
 @app.post("/api/asesorias", response_model=schemas.AsesoriaOut, status_code=status.HTTP_201_CREATED)
 def create_asesoria(
     asesoria: schemas.AsesoriaCreate,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Crear una nueva asesoría"""
     return asesoria_service.create(asesoria)
@@ -98,8 +92,7 @@ def create_asesoria(
 def update_asesoria(
     asesoria_id: int,
     asesoria: schemas.AsesoriaUpdate,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Actualizar una asesoría"""
     updated = asesoria_service.update(asesoria_id, asesoria)
@@ -110,8 +103,7 @@ def update_asesoria(
 @app.delete("/api/asesorias/{asesoria_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_asesoria(
     asesoria_id: int,
-    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service),
-    current_user: dict = Depends(verify_firebase_token)
+    asesoria_service: service.AsesoriaService = Depends(get_asesoria_service)
 ):
     """Eliminar una asesoría"""
     if not asesoria_service.delete(asesoria_id):
@@ -122,8 +114,7 @@ def delete_asesoria(
 
 @app.get("/api/ausencias", response_model=List[schemas.AusenciaOut])
 def get_ausencias(
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Obtener todas las ausencias"""
     return ausencia_service.get_all()
@@ -131,8 +122,7 @@ def get_ausencias(
 @app.get("/api/ausencias/{ausencia_id}", response_model=schemas.AusenciaOut)
 def get_ausencia(
     ausencia_id: int,
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Obtener una ausencia por ID"""
     ausencia = ausencia_service.get_by_id(ausencia_id)
@@ -143,8 +133,7 @@ def get_ausencia(
 @app.get("/api/ausencias/programador/{programador_uid}", response_model=List[schemas.AusenciaOut])
 def get_ausencias_programador(
     programador_uid: str,
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Obtener todas las ausencias de un programador"""
     return ausencia_service.get_by_programador(programador_uid)
@@ -153,8 +142,7 @@ def get_ausencias_programador(
 def get_ausencias_por_fecha(
     programador_uid: str,
     fecha: str,
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Obtener ausencias de un programador en una fecha específica"""
     return ausencia_service.get_by_programador_y_fecha(programador_uid, fecha)
@@ -162,8 +150,7 @@ def get_ausencias_por_fecha(
 @app.post("/api/ausencias", response_model=schemas.AusenciaOut, status_code=status.HTTP_201_CREATED)
 def create_ausencia(
     ausencia: schemas.AusenciaCreate,
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Crear una nueva ausencia"""
     return ausencia_service.create(ausencia)
@@ -172,8 +159,7 @@ def create_ausencia(
 def update_ausencia(
     ausencia_id: int,
     ausencia: schemas.AusenciaUpdate,
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Actualizar una ausencia"""
     updated = ausencia_service.update(ausencia_id, ausencia)
@@ -184,8 +170,7 @@ def update_ausencia(
 @app.delete("/api/ausencias/{ausencia_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_ausencia(
     ausencia_id: int,
-    ausencia_service: service.AusenciaService = Depends(get_ausencia_service),
-    current_user: dict = Depends(verify_firebase_token)
+    ausencia_service: service.AusenciaService = Depends(get_ausencia_service)
 ):
     """Eliminar una ausencia"""
     if not ausencia_service.delete(ausencia_id):

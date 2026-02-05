@@ -13,6 +13,7 @@ export interface Usuario {
 }
 
 export interface HorarioDisponible {
+  id?: number; // ID de PostgreSQL
   dia: 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
   horaInicio: string; // Formato "HH:mm"
   horaFin: string; // Formato "HH:mm"

@@ -276,43 +276,58 @@ export class AsesoriasComponent implements OnInit, OnDestroy {
 
       console.log('✅ Solicitud guardada:', asesoria.id);
 
-      // Enviar correo electrónico REAL
+      // Enviar correo electrónico REAL solo si el programador tiene email
       try {
-        await this.notificationService.simularEnvioCorreo(
-          this.selectedProgramador,
-          {
-            usuarioNombre: user.displayName || 'Usuario',
-            usuarioEmail: user.email || '',
-            tema: this.formData.tema,
-            descripcion: this.formData.descripcion,
-            comentario: this.formData.comentario,
-            fechaSolicitada: this.formData.fecha,
-            horaSolicitada: this.formData.hora,
-          }
-        );
-        console.log('✅ Correo enviado al programador');
+        if (!this.selectedProgramador?.email) {
+          console.warn('⚠️ El programador no tiene email configurado, omitiendo envío de correo');
+        } else {
+          await this.notificationService.simularEnvioCorreo(
+            this.selectedProgramador,
+            {
+              usuarioNombre: user.displayName || 'Usuario',
+              usuarioEmail: user.email || '',
+              tema: this.formData.tema,
+              descripcion: this.formData.descripcion,
+              comentario: this.formData.comentario,
+              fechaSolicitada: this.formData.fecha,
+              horaSolicitada: this.formData.hora,
+            }
+          );
+          console.log('✅ Correo enviado al programador');
+        }
 
-        const telefono = this.selectedProgramador?.telefono;
-        if (telefono) {
-          const mensaje = `Nueva asesoría solicitada por ${user.displayName || 'Usuario'}\n` +
-            `Tema: ${this.formData.tema}\n` +
-            `Fecha: ${this.formData.fecha} ${this.formData.hora}\n` +
-            `Descripción: ${this.formData.descripcion}`;
+        // Solo intentar enviar WhatsApp si está habilitado en environment
+        if (this.notificationService.isWhatsappEnabled()) {
+          const telefono = this.selectedProgramador?.telefono;
+          if (telefono) {
+            const mensaje = `Nueva asesoría solicitada por ${user.displayName || 'Usuario'}\n` +
+              `Tema: ${this.formData.tema}\n` +
+              `Fecha: ${this.formData.fecha} ${this.formData.hora}\n` +
+              `Descripción: ${this.formData.descripcion}`;
 
-          try {
-            await this.notificationService.enviarWhatsapp(telefono, mensaje);
-            console.log('📱 WhatsApp enviado automáticamente al programador');
-          } catch (whatsError) {
-            console.warn('⚠️ Error enviando WhatsApp:', whatsError);
+            try {
+              await this.notificationService.enviarWhatsapp(telefono, mensaje);
+              console.log('📱 WhatsApp enviado automáticamente al programador');
+            } catch (whatsError: any) {
+              console.error('❌ Error enviando WhatsApp:', whatsError);
+              console.error('Detalles del error:', {
+                message: whatsError?.message,
+                code: whatsError?.code,
+                details: whatsError?.details
+              });
+              // Continuar con el proceso aunque falle WhatsApp
+            }
+          } else {
+            console.log('ℹ️ El programador no tiene teléfono configurado');
           }
         } else {
-          console.warn('⚠️ El programador no tiene teléfono configurado');
+          console.log('ℹ️ WhatsApp no está habilitado (configurar Twilio en Firebase)');
         }
       } catch (emailError) {
-        console.warn('⚠️ Error al enviar correo:', emailError);
+        console.warn('⚠️ Error al enviar notificaciones:', emailError);
       }
       
-      alert('✅ Solicitud enviada exitosamente. El programador recibirá un correo y WhatsApp con los detalles.');
+      alert('✅ Solicitud enviada exitosamente. El programador será notificado.');
       this.closeModal();
       
     } catch (error) {

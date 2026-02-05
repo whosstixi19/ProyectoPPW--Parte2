@@ -13,11 +13,26 @@ export class NotificationService {
     emailjs.init(environment.emailjs.publicKey);
   }
 
+  // Verificar si WhatsApp está habilitado
+  isWhatsappEnabled(): boolean {
+    return environment.whatsappEnabled || false;
+  }
+
   // Enviar WhatsApp usando Firebase Functions
   async enviarWhatsapp(telefono: string, mensaje: string): Promise<{ success: boolean }> {
-    const callable = httpsCallable(this.functions, 'sendWhatsappNotification');
-    const result = await callable({ telefono, mensaje });
-    return result.data as { success: boolean };
+    try {
+      const callable = httpsCallable(this.functions, 'sendWhatsappNotification');
+      const result = await callable({ telefono, mensaje });
+      return result.data as { success: boolean };
+    } catch (error: any) {
+      console.error('❌ Error detallado en enviarWhatsapp:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        fullError: error
+      });
+      throw error;
+    }
   }
 
   // Enviar correo al programador cuando se solicita una asesoría

@@ -369,7 +369,7 @@
             <div class="profile-horarios">
               <h4>📅 Horarios de Disponibilidad</h4>
               <div class="horarios-list">
-                @for (horario of programador.horariosDisponibles; track horario.dia) {
+                @for (horario of programador.horariosDisponibles; track $index) {
                   @if (horario.activo !== false && horario.horaInicio && horario.horaFin) {
                     <div class="horario-item">
                       <span class="horario-dia">{{ getDiaNombre(horario.dia) }}</span>
@@ -1010,7 +1010,7 @@
         @if (programador && programador.horariosDisponibles && programador.horariosDisponibles.length > 0) {
           <div class="ausencias-list">
             <h3>Horarios Configurados</h3>
-            @for (horario of programador.horariosDisponibles; track horario.dia + horario.horaInicio) {
+            @for (horario of programador.horariosDisponibles; track $index) {
               <div class="ausencia-item">
                 <div class="ausencia-info">
                   <strong>{{ getDiaNombre(horario.dia) }}</strong>
@@ -1044,7 +1044,7 @@
                   <button
                     type="button"
                     class="btn-icon btn-delete"
-                    (click)="eliminarHorario(horario.dia, horario.horaInicio)"
+                    (click)="eliminarHorario(horario)"
                     title="Eliminar"
                   >
                     <svg

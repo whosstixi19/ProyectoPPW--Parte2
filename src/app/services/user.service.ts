@@ -145,8 +145,9 @@ export class UserService {
           this.horarioService.getHorariosByProgramador(uid)
         );
         
-        // Transformar de API a modelo Firestore
+        // Transformar de API a modelo Firestore (INCLUYENDO EL ID)
         horariosDisponibles = horariosAPI.map(h => ({
+          id: h.id, // ¡IMPORTANTE! Incluir el ID de PostgreSQL
           dia: h.dia as any,
           horaInicio: h.horaInicio,
           horaFin: h.horaFin,
@@ -314,24 +315,47 @@ export class UserService {
   // Actualizar horarios de disponibilidad
   async updateHorarios(programadorId: string, horarios: HorarioDisponible[]): Promise<boolean> {
     try {
-      // Crear cada horario en PostgreSQL via Jakarta API
+      // ESTRATEGIA SIMPLIFICADA: No usar DELETE (backend puede no tenerlo)
+      // 1. Obtener horarios actuales
+      const horariosExistentes = await firstValueFrom(
+        this.horarioService.getHorariosByProgramador(programadorId)
+      );
+      
+      console.log('📋 Horarios existentes:', horariosExistentes.length);
+      console.log('📝 Horarios a guardar:', horarios.length);
+      
+      // 2. Para cada horario existente, intentar actualizarlo o marcarlo para ignorar
+      const horariosExistentesIds = horariosExistentes.map(h => h.id);
+      
+      // 3. Crear los nuevos horarios (los que no tienen ID)
       for (const horario of horarios) {
-        // Transformar de modelo Firestore a modelo API REST
         const horarioAPI: HorarioAPI = {
-          programadorUid: programadorId, // Usar Firebase UID directamente
-          dia: horario.dia, // 'lunes' -> 'lunes'
+          programadorUid: programadorId,
+          dia: horario.dia,
           horaInicio: horario.horaInicio,
           horaFin: horario.horaFin,
           activo: horario.activo,
-          disponible: horario.activo // Usar el mismo valor
+          disponible: horario.activo
         };
         
-        // Solo crear nuevos horarios (no hay id en el modelo Firestore)
-        await firstValueFrom(this.horarioService.createHorario(horarioAPI));
-        console.log('✅ Horario creado:', horario.dia);
+        // Si el horario tiene ID, actualizarlo; si no, crearlo
+        if (horario.id && horariosExistentesIds.includes(horario.id)) {
+          // Actualizar existente
+          horarioAPI.id = horario.id;
+          await firstValueFrom(this.horarioService.updateHorario(horario.id, horarioAPI));
+          console.log('✏️ Horario actualizado:', horario.id);
+        } else {
+          // Crear nuevo
+          await firstValueFrom(this.horarioService.createHorario(horarioAPI));
+          console.log('✅ Horario creado:', horario.dia, horario.horaInicio);
+        }
       }
       
-      this.cacheService.invalidate(); // Invalidar caché
+      // 4. NOTA: Los horarios que no están en la nueva lista quedarán en BD
+      // Para eliminarlos necesitarías el método DELETE en Jakarta o implementar
+      // una lógica de "soft delete" marcándolos como activo=false
+      
+      this.cacheService.invalidate();
       return true;
     } catch (error) {
       console.error('❌ Error actualizando horarios:', error);

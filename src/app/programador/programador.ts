@@ -143,10 +143,12 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
                 this.mostrarNotificaciones = true;
               }
               
-              // Verificar si debe mostrar el modal de configuración de WhatsApp
-              this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
-                currentUser.uid
-              );
+              // Verificar si debe mostrar el modal de configuración de WhatsApp (solo si está habilitado)
+              if (this.notificationService.isWhatsappEnabled()) {
+                this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+                  currentUser.uid
+                );
+              }
             }
           } else {
             // Sin UID en params: solo programadores pueden ver su propio perfil aquí
@@ -167,10 +169,12 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
               this.mostrarProyectos = true;
             }
             
-            // Verificar si debe mostrar el modal de configuración de WhatsApp
-            this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
-              currentUser.uid
-            );
+            // Verificar si debe mostrar el modal de configuración de WhatsApp (solo si está habilitado)
+            if (this.notificationService.isWhatsappEnabled()) {
+              this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
+                currentUser.uid
+              );
+            }
           }
           
           this.loading = false;
@@ -766,21 +770,21 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
   }
 
   // Eliminar un horario de disponibilidad
-  async eliminarHorario(dia: string, horaInicio: string) {
+  async eliminarHorario(horario: HorarioDisponible) {
     if (!this.programador || !this.isOwner) {
       alert('No tienes permisos para realizar esta acción');
       return;
     }
 
-    if (!confirm(`¿Estás seguro de eliminar el horario del ${dia}?`)) {
+    if (!confirm(`¿Estás seguro de eliminar el horario del ${this.getDiaNombre(horario.dia)}?`)) {
       return;
     }
 
     this.loading = true;
 
-    // Filtrar el horario a eliminar
+    // Filtrar el horario a eliminar de la lista local
     const horarios = (this.programador.horariosDisponibles || []).filter(h => 
-      !(h.dia === dia && h.horaInicio === horaInicio)
+      !(h.dia === horario.dia && h.horaInicio === horario.horaInicio)
     );
     
     const success = await this.userService.updateHorarios(this.programador.uid, horarios);
@@ -827,7 +831,7 @@ export class ProgramadorComponent implements OnInit, OnDestroy {
       
       // Programar para mostrar el modal nuevamente después de 10 minutos
       setTimeout(() => {
-        if (this.programador) {
+        if (this.programador && this.notificationService.isWhatsappEnabled()) {
           this.showWhatsappModal = this.whatsappSetupService.shouldShowModal(
             this.programador.uid
           );

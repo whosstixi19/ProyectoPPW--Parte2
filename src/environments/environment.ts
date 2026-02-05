@@ -16,6 +16,8 @@ export const environment = {
     templateIdRespuesta: 'template_v5wk3ud',
     publicKey: 'jvwOoVxtNR7rXH9kB',
   },
+  whatsappEnabled: true, // ✅ WhatsApp habilitado - usando emulador local
+  useEmulators: true, // Usar emuladores locales de Firebase
   api: {
     jakarta: 'http://localhost:8080/Backend-JakartaWindfly11/api',
     springBoot: 'http://localhost:8081/api/spring',

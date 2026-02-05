@@ -152,7 +152,7 @@
               <div class="card-horarios">
                 <h4>📅 Horarios Disponibles</h4>
                 <div class="horarios-grid">
-                  @for (horario of prog.horariosDisponibles; track horario.dia) {
+                  @for (horario of prog.horariosDisponibles; track $index) {
                     <div class="horario-item">
                       <span class="dia">{{ getDiaNombre(horario.dia) }}</span>
                       <span class="hora">{{ horario.horaInicio }} - {{ horario.horaFin }}</span>

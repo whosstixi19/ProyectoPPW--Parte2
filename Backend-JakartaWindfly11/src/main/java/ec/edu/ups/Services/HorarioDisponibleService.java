@@ -137,4 +137,34 @@ public class HorarioDisponibleService {
 
 		return Response.ok(horario).build();
 	}
+	
+	@DELETE
+	@Path("/{id}")
+	@Produces("application/json")
+	public Response deleteHorario(@PathParam("id") Integer id) {
+		try {
+			HorarioDisponible h = gh.getHorario(id);
+			
+			if(h == null) {
+				Error error = new Error(
+						404,
+						"No encontrado",
+						"Horario con ID " + id + " no existe");
+				return Response.status(Response.Status.NOT_FOUND)
+						.entity(error).build();
+			}
+			
+			gh.eliminarHorario(id);
+			return Response.noContent().build();
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+			Error error = new Error(
+					500,
+					"Error interno",
+					e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(error).build();
+		}
+	}
 }

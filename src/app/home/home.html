@@ -282,7 +282,7 @@
                     <div class="card-horarios">
                       <h4>📅 Horarios de Disponibilidad</h4>
                       <div class="horarios-list">
-                        @for (horario of prog.horariosDisponibles; track horario.dia) {
+                        @for (horario of prog.horariosDisponibles; track $index) {
                           @if (horario.activo) {
                             <div class="horario-item">
                               <span class="horario-dia">{{ getDiaNombre(horario.dia) }}</span>

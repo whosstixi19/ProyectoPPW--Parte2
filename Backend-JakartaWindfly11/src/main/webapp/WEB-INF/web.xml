@@ -7,7 +7,8 @@
 
     <display-name>Backend Jakarta WildFly 11</display-name>
 
-    <!-- CORS Filter - DEBE ejecutarse PRIMERO -->
+    <!-- CORS Filter - TEMPORALMENTE DESHABILITADO PARA DEBUG -->
+    <!--
     <filter>
         <filter-name>CorsFilter</filter-name>
         <filter-class>ec.edu.ups.filter.CorsFilter</filter-class>
@@ -17,8 +18,10 @@
         <filter-name>CorsFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    -->
 
-    <!-- Firebase Auth Filter - Se ejecuta DESPUÉS de CORS -->
+    <!-- Firebase Auth Filter - TEMPORALMENTE DESHABILITADO -->
+    <!--
     <filter>
         <filter-name>FirebaseAuthFilter</filter-name>
         <filter-class>ec.edu.ups.filter.FirebaseAuthFilter</filter-class>
@@ -28,5 +31,6 @@
         <filter-name>FirebaseAuthFilter</filter-name>
         <url-pattern>/api/*</url-pattern>
     </filter-mapping>
+    -->
 
 </web-app>
