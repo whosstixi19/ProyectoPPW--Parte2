@@ -12,7 +12,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 @Path("horario")
-// @Secured  // DESHABILITADO TEMPORALMENTE PARA PRUEBAS
 public class HorarioDisponibleService {
 	
 	@Inject

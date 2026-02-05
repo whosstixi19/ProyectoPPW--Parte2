@@ -54,53 +54,9 @@ public class FirebaseAuthFilter implements Filter {
             return;
         }
 
-        // ⚠️ MODO DE PRUEBA: DESHABILITAR VALIDACIÓN DE TOKEN
-        System.out.println("⚠️ FILTRO DE SEGURIDAD DESHABILITADO - MODO DE PRUEBA");
+        // SEGURIDAD DESHABILITADA - Solo Firebase maneja la autenticación en el frontend
+        // Los servicios confían en que Angular ya validó al usuario
         chain.doFilter(request, response);
-        return;
-
-        /* CÓDIGO ORIGINAL COMENTADO PARA PRUEBAS
-        String path = httpRequest.getRequestURI();
-        
-        // Rutas que no requieren autenticación
-        if (path.contains("/api/auth/") || path.contains("/api/public/")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        // Obtener token del header Authorization
-        String authHeader = httpRequest.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            httpResponse.getWriter().write("{\"error\": \"Token no proporcionado\"}");
-            return;
-        }
-
-        String token = authHeader.substring(7); // Remover "Bearer "
-
-        try {
-            // Validar token con Firebase
-            FirebaseToken decodedToken = firebaseService.verifyToken(token);
-
-            // Agregar información del usuario al request
-            httpRequest.setAttribute("uid", decodedToken.getUid());
-            httpRequest.setAttribute("email", decodedToken.getEmail());
-            httpRequest.setAttribute("firebase_token", decodedToken);
-
-            // Continuar con la petición
-            chain.doFilter(request, response);
-
-        } catch (FirebaseAuthException e) {
-            System.err.println("❌ Token Firebase inválido: " + e.getMessage());
-            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            httpResponse.getWriter().write("{\"error\": \"Token inválido o expirado\"}");
-        } catch (Exception e) {
-            System.err.println("❌ Error al validar token: " + e.getMessage());
-            httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            httpResponse.getWriter().write("{\"error\": \"Error interno del servidor\"}");
-        }
-        */
     }
 
     @Override

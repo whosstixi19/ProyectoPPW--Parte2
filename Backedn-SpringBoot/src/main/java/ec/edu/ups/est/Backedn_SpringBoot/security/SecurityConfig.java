@@ -32,9 +32,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()  // DESHABILITADO PARA PRUEBAS - Permitir todo sin autenticación
+                .anyRequest().permitAll()  // Sin autenticación - Firebase maneja auth en frontend
             );
-            // .addFilterBefore(firebaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // FILTRO DESHABILITADO
 
         return http.build();
     }
