@@ -32,8 +32,10 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()  // Sin autenticación - Firebase maneja auth en frontend
-            );
+                .requestMatchers("/health", "/", "/api/spring/health").permitAll()  // Endpoints públicos
+                .anyRequest().authenticated()  // Resto requiere autenticación
+            )
+            .addFilterBefore(firebaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -5,7 +5,23 @@ import { Router } from '@angular/router';
 import { filter, take } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
+import { PersonaService, Persona } from '../services/persona.service';
 import { Programador, Proyecto, HorarioDisponible } from '../models/user.model';
+
+// Interface para usuario extendido con datos de persona
+interface UsuarioExtendido {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: 'admin' | 'programador' | 'usuario';
+  photoURL?: string;
+  // Datos de persona (Spring Boot)
+  personaId?: number;
+  nombre?: string;
+  apellido?: string;
+  telefono?: string;
+  direccion?: string;
+}
 
 @Component({
   selector: 'app-admin',
@@ -15,12 +31,26 @@ import { Programador, Proyecto, HorarioDisponible } from '../models/user.model';
 })
 export class AdminComponent implements OnInit {
   programadores: Programador[] = [];
-  todosUsuarios: any[] = [];
+  todosUsuarios: UsuarioExtendido[] = [];
   selectedProgramador: Programador | null = null;
+  selectedUsuario: UsuarioExtendido | null = null;
   showEditModal = false;
   showHorariosModal = false;
   showUsuariosModal = false;
+  showUsuarioEditModal = false;
   loading = false;
+  loadingUsuarios = false;
+
+  usuarioFormData: UsuarioExtendido = {
+    uid: '',
+    email: '',
+    displayName: '',
+    role: 'usuario',
+    nombre: '',
+    apellido: '',
+    telefono: '',
+    direccion: ''
+  };
 
   diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 
@@ -42,6 +72,7 @@ export class AdminComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private personaService: PersonaService,
     private router: Router,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -64,7 +95,33 @@ export class AdminComponent implements OnInit {
   }
 
   async loadAllUsuarios() {
-    this.todosUsuarios = await this.userService.getAllUsuarios();
+    this.loadingUsuarios = true;
+    const usuarios = await this.userService.getAllUsuarios();
+    
+    // Cargar personas de Spring Boot
+    this.personaService.getPersonas().subscribe({
+      next: (personas) => {
+        // Combinar datos de Firebase con Spring Boot
+        this.todosUsuarios = usuarios.map((usuario: any) => {
+          const persona = personas.find(p => p.email === usuario.email);
+          return {
+            ...usuario,
+            personaId: persona?.id,
+            nombre: persona?.nombre || '',
+            apellido: persona?.apellido || '',
+            telefono: persona?.telefono || '',
+            direccion: persona?.direccion || ''
+          };
+        });
+        this.loadingUsuarios = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.todosUsuarios = usuarios;
+        this.loadingUsuarios = false;
+      }
+    });
   }
 
   async loadProgramadores() {
@@ -184,7 +241,7 @@ export class AdminComponent implements OnInit {
     this.showUsuariosModal = false;
   }
 
-  async cambiarRol(usuario: any, nuevoRol: 'admin' | 'programador' | 'usuario') {
+  async cambiarRol(usuario: UsuarioExtendido, nuevoRol: 'admin' | 'programador' | 'usuario') {
     if (!confirm(`¿Cambiar rol de ${usuario.displayName} a ${nuevoRol}?`)) {
       return;
     }
@@ -193,6 +250,14 @@ export class AdminComponent implements OnInit {
     const success = await this.userService.updateUserRole(usuario.uid, nuevoRol);
 
     if (success) {
+      // Si el usuario no tiene persona en Spring Boot, crearla automáticamente
+      if (!usuario.personaId && usuario.email) {
+        this.sincronizarPersona(usuario).subscribe({
+          next: () => console.log('Persona creada automáticamente'),
+          error: (err) => console.error('Error creando persona:', err)
+        });
+      }
+      
       await Promise.all([this.loadAllUsuarios(), this.loadProgramadores()]);
       alert('Rol actualizado correctamente');
     } else {
@@ -279,6 +344,75 @@ export class AdminComponent implements OnInit {
       return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
     } catch {
       return false;
+    }
+  }
+
+  // =============================================
+  // Métodos para Gestión Unificada de Usuarios
+  // =============================================
+
+  openUsuarioEditModal(usuario?: UsuarioExtendido) {
+    if (usuario) {
+      this.selectedUsuario = usuario;
+      this.usuarioFormData = { ...usuario };
+    } else {
+      this.selectedUsuario = null;
+      this.usuarioFormData = {
+        uid: '',
+        email: '',
+        displayName: '',
+        role: 'usuario',
+        nombre: '',
+        apellido: '',
+        telefono: '',
+        direccion: ''
+      };
+    }
+    this.showUsuarioEditModal = true;
+  }
+
+  closeUsuarioEditModal() {
+    this.showUsuarioEditModal = false;
+    this.selectedUsuario = null;
+  }
+
+  saveUsuarioExtendido() {
+    if (!this.usuarioFormData.nombre || !this.usuarioFormData.apellido) {
+      alert('Por favor completa los campos obligatorios (Nombre y Apellido)');
+      return;
+    }
+
+    this.loading = true;
+
+    // Sincronizar con Spring Boot
+    this.sincronizarPersona(this.usuarioFormData).subscribe({
+      next: () => {
+        alert('Datos actualizados correctamente');
+        this.loadAllUsuarios();
+        this.closeUsuarioEditModal();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error guardando persona:', err);
+        alert('Error al guardar datos de persona');
+        this.loading = false;
+      }
+    });
+  }
+
+  private sincronizarPersona(usuario: UsuarioExtendido) {
+    const personaData: Persona = {
+      nombre: usuario.nombre || usuario.displayName.split(' ')[0] || '',
+      apellido: usuario.apellido || usuario.displayName.split(' ').slice(1).join(' ') || '',
+      email: usuario.email,
+      telefono: usuario.telefono || '',
+      direccion: usuario.direccion || ''
+    };
+
+    if (usuario.personaId) {
+      return this.personaService.updatePersona(usuario.personaId, personaData);
+    } else {
+      return this.personaService.createPersona(personaData);
     }
   }
 }

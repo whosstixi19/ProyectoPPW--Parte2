@@ -683,3 +683,200 @@
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
   }
 }
+
+// Botón success para gestionar personas
+.btn-success {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+  box-shadow: 0 1px 3px rgba(39, 174, 96, 0.2);
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  }
+}
+
+// Estilos para la gestión de personas
+.personas-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 0.5rem;
+}
+
+// Estilos para la gestión unificada de usuarios
+.usuarios-header-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.loading-usuarios {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.usuario-item-extended {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .usuario-main-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .usuario-avatar-info {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  .usuario-details {
+    flex: 1;
+    
+    .usuario-name-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .persona-name {
+      margin: 0.25rem 0;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .persona-detail {
+      margin: 0.25rem 0;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+  }
+
+  .usuario-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.badge-synced {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: #27ae60;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 1rem;
+  font-weight: 500;
+}
+
+.badge-not-synced {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: #f39c12;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 1rem;
+  font-weight: 500;
+}
+
+.form-info-box {
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid var(--primary);
+
+  p {
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+  }
+
+  .text-success {
+    color: #27ae60;
+    font-weight: 500;
+  }
+
+  .text-warning {
+    color: #f39c12;
+    font-weight: 500;
+  }
+}
+
+.loading-personas {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.personas-table-container {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.personas-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+
+  thead {
+    background: var(--background);
+    
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background: var(--background);
+      }
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--border);
+      }
+    }
+
+    td {
+      padding: 1rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+
+      &.actions-cell {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+    }
+  }
+}
+
+.modal-large {
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+

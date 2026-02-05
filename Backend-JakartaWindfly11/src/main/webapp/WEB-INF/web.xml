@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Backend Jakarta WildFly 11</display-name>
+
+    <!-- CORS Filter - DEBE ejecutarse PRIMERO -->
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>ec.edu.ups.filter.CorsFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Firebase Auth Filter - Se ejecuta DESPUÉS de CORS -->
+    <filter>
+        <filter-name>FirebaseAuthFilter</filter-name>
+        <filter-class>ec.edu.ups.filter.FirebaseAuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>FirebaseAuthFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+</web-app>
