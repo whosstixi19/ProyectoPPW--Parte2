@@ -1,5 +1,11 @@
 package ec.edu.ups.bussiness;
 
+/*
+ * CLASE DESHABILITADA - ProgramadorDAO no existe
+ * Descomentar cuando se cree la clase ProgramadorDAO
+ */
+
+/*
 import java.util.List;
 
 import ec.edu.ups.DAO.ProgramadorDAO;
@@ -83,3 +89,4 @@ public class ProgramadorDemo {
 		}
 	}
 }
+*/
