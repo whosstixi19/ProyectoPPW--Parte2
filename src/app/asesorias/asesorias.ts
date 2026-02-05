@@ -291,7 +291,23 @@ export class AsesoriasComponent implements OnInit, OnDestroy {
           }
         );
         console.log('✅ Correo enviado al programador');
-        console.log('📱 WhatsApp enviado automáticamente al programador');
+
+        const telefono = this.selectedProgramador?.telefono;
+        if (telefono) {
+          const mensaje = `Nueva asesoría solicitada por ${user.displayName || 'Usuario'}\n` +
+            `Tema: ${this.formData.tema}\n` +
+            `Fecha: ${this.formData.fecha} ${this.formData.hora}\n` +
+            `Descripción: ${this.formData.descripcion}`;
+
+          try {
+            await this.notificationService.enviarWhatsapp(telefono, mensaje);
+            console.log('📱 WhatsApp enviado automáticamente al programador');
+          } catch (whatsError) {
+            console.warn('⚠️ Error enviando WhatsApp:', whatsError);
+          }
+        } else {
+          console.warn('⚠️ El programador no tiene teléfono configurado');
+        }
       } catch (emailError) {
         console.warn('⚠️ Error al enviar correo:', emailError);
       }

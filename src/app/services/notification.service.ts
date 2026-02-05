@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import emailjs from '@emailjs/browser';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { environment } from '../../environments/environment';
 
 // Servicio para envío de notificaciones por correo electrónico
@@ -7,9 +8,16 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class NotificationService {
-  constructor() {
+  constructor(private functions: Functions) {
     // Inicializar EmailJS con la public key
     emailjs.init(environment.emailjs.publicKey);
+  }
+
+  // Enviar WhatsApp usando Firebase Functions
+  async enviarWhatsapp(telefono: string, mensaje: string): Promise<{ success: boolean }> {
+    const callable = httpsCallable(this.functions, 'sendWhatsappNotification');
+    const result = await callable({ telefono, mensaje });
+    return result.data as { success: boolean };
   }
 
   // Enviar correo al programador cuando se solicita una asesoría
