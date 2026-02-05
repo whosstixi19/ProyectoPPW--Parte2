@@ -3,13 +3,20 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Interceptor HTTP que agrega el token JWT a todas las peticiones
+ * Interceptor JWT DESHABILITADO
+ * No se usa validación de JWT - Firebase Auth maneja toda la autenticación
  */
+export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
+  // JWT deshabilitado - no agregamos ningún header
+  // Los backends confían en las peticiones de Angular
+  return next(req);
+};
+
+/* VERSIÓN ORIGINAL (DESHABILITADA)
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Si existe un token, clonamos la request y agregamos el header Authorization
   if (token) {
     req = req.clone({
       setHeaders: {
@@ -20,3 +27,4 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req);
 };
+*/

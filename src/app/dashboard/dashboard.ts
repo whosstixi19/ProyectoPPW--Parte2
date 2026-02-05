@@ -74,6 +74,23 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  /**
+   * Recargar todos los datos del dashboard y recrear gráficos
+   */
+  async recargarDashboard(): Promise<void> {
+    console.log('🔄 Recargando dashboard...');
+    this.loading = true;
+    this.datosListos = false;
+    
+    // Destruir gráficos existentes
+    this.destroyCharts();
+    
+    // Recargar todos los datos
+    await this.loadUserAndData();
+    
+    console.log('✅ Dashboard recargado exitosamente');
+  }
+
   async loadUserAndData(): Promise<void> {
     try {
       this.currentUser = await this.authService.getCurrentUser();

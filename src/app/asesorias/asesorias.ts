@@ -259,7 +259,7 @@ export class AsesoriasComponent implements OnInit, OnDestroy {
     this.enviando = true;
     
     try {
-      // Guardar en Firestore
+      // Crear asesoría en la API de FastAPI
       const asesoria = await this.asesoriaService.crearAsesoria({
         usuarioUid: user.uid,
         usuarioNombre: user.displayName || 'Usuario',

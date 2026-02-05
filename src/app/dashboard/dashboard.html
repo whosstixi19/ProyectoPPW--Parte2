@@ -6,9 +6,15 @@
         <span class="icon">📊</span>
         Dashboard
       </h1>
-      <div class="user-info">
-        <span class="user-role">{{ isProgramador ? '👨‍💻 Programador' : '👤 Usuario' }}</span>
-        <span class="user-name">{{ currentUser?.displayName || currentUser?.email }}</span>
+      <div class="header-actions">
+        <button class="btn-refresh" (click)="recargarDashboard()" [disabled]="loading" title="Recargar gráficos">
+          <span class="refresh-icon">🔄</span>
+          Recargar
+        </button>
+        <div class="user-info">
+          <span class="user-role">{{ isProgramador ? '👨‍💻 Programador' : '👤 Usuario' }}</span>
+          <span class="user-name">{{ currentUser?.displayName || currentUser?.email }}</span>
+        </div>
       </div>
     </div>
   </header>

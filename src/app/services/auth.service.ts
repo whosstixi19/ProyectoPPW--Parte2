@@ -22,9 +22,9 @@ export class AuthService {
   private authReady = new BehaviorSubject<boolean>(false);
   authReady$ = this.authReady.asObservable();
   
-  // URL del backend Java
-  private apiUrl = 'http://localhost:8080/JAVA_T/api'; // Ajusta según tu configuración
-  private jwtToken: string | null = null;
+  // JWT NO se usa - Firebase Auth maneja autenticación, backends confían en Angular
+  // private apiUrl = 'http://localhost:8080/Backend-JakartaWindfly11/api';
+  // private jwtToken: string | null = null;
 
   constructor(
     private auth: Auth,
@@ -40,12 +40,12 @@ export class AuthService {
     onAuthStateChanged(this.auth, async (firebaseUser) => {
       if (firebaseUser) {
         await this.loadUserData(firebaseUser.uid);
-        // Obtener token JWT del backend
-        await this.getJwtToken(firebaseUser.email!);
+        // NO necesitamos JWT - Firebase Auth maneja todo
+        // await this.getJwtToken(firebaseUser.email!);
         this.authReady.next(true);
       } else {
         this.currentUser = null;
-        this.jwtToken = null;
+        // this.jwtToken = null;
         this.clearCache();
         this.authReady.next(true);
       }
@@ -56,12 +56,8 @@ export class AuthService {
   private loadFromCache(): void {
     try {
       const cachedUser = localStorage.getItem('currentUser');
-      const cachedToken = localStorage.getItem('jwtToken');
       if (cachedUser) {
         this.currentUser = JSON.parse(cachedUser);
-      }
-      if (cachedToken) {
-        this.jwtToken = cachedToken;
       }
     } catch (error) {
       console.error('Error cargando caché:', error);
@@ -71,9 +67,6 @@ export class AuthService {
   private saveToCache(user: Usuario): void {
     try {
       localStorage.setItem('currentUser', JSON.stringify(user));
-      if (this.jwtToken) {
-        localStorage.setItem('jwtToken', this.jwtToken);
-      }
     } catch (error) {
       console.error('Error guardando caché:', error);
     }
@@ -81,32 +74,32 @@ export class AuthService {
 
   private clearCache(): void {
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('jwtToken');
+    // localStorage.removeItem('jwtToken'); // Ya no se usa
   }
 
   /**
-   * Obtiene un token JWT del backend usando el email del usuario
+   * JWT deshabilitado - No se usa validación de token en backend
    */
-  private async getJwtToken(email: string): Promise<void> {
-    try {
-      const response: any = await this.http.post(`${this.apiUrl}/auth/login`, {
-        email: email,
-        firebaseToken: await this.auth.currentUser?.getIdToken()
-      }).toPromise();
-      
-      this.jwtToken = response.token;
-      localStorage.setItem('jwtToken', this.jwtToken!);
-    } catch (error) {
-      console.error('Error obteniendo JWT:', error);
-    }
-  }
+  // private async getJwtToken(email: string): Promise<void> {
+  //   try {
+  //     const response: any = await this.http.post(`${this.apiUrl}/auth/login`, {
+  //       email: email,
+  //       firebaseToken: await this.auth.currentUser?.getIdToken()
+  //     }).toPromise();
+  //     
+  //     this.jwtToken = response.token;
+  //     localStorage.setItem('jwtToken', this.jwtToken!);
+  //   } catch (error) {
+  //     console.error('Error obteniendo JWT:', error);
+  //   }
+  // }
 
   /**
-   * Retorna el token JWT para incluir en las peticiones HTTP
+   * Token JWT no se usa
    */
-  getToken(): string | null {
-    return this.jwtToken;
-  }
+  // getToken(): string | null {
+  //   return this.jwtToken;
+  // }
 
   /**
    * Retorna el token de ID de Firebase para autenticación directa
@@ -120,16 +113,9 @@ export class AuthService {
   }
 
   /**
-   * Retorna los headers con el token JWT
+   * Retorna headers básicos (sin JWT)
    */
   getAuthHeaders(): HttpHeaders {
-    const token = this.getToken();
-    if (token) {
-      return new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      });
-    }
     return new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -157,14 +143,14 @@ export class AuthService {
 
         await setDoc(doc(this.firestore, 'usuarios', result.user.uid), newUser);
         this.currentUser = newUser;
-        // Obtener token JWT del backend
-        await this.getJwtToken(newUser.email);
+        // NO necesitamos JWT
+        // await this.getJwtToken(newUser.email);
         this.saveToCache(newUser);
         return newUser;
       } else {
         this.currentUser = userDoc.data() as Usuario;
-        // Obtener token JWT del backend
-        await this.getJwtToken(this.currentUser.email);
+        // NO necesitamos JWT
+        // await this.getJwtToken(this.currentUser.email);
         this.saveToCache(this.currentUser);
         return this.currentUser;
       }
@@ -191,7 +177,7 @@ export class AuthService {
     try {
       await signOut(this.auth);
       this.currentUser = null;
-      this.jwtToken = null;
+      // this.jwtToken = null; // Ya no se usa
       this.clearCache();
     } catch (error) {
       console.error('Error en logout:', error);

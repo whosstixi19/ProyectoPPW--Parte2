@@ -17,8 +17,8 @@ export const environment = {
     publicKey: 'jvwOoVxtNR7rXH9kB',
   },
   api: {
-    jakarta: 'http://localhost:8080/JAVA_T/api',
+    jakarta: 'http://localhost:8080/Backend-JakartaWindfly11/api',
     springBoot: 'http://localhost:8081/api/spring',
-    fastApi: 'http://localhost:5000/api',
+    fastApi: 'http://localhost:8000/api',
   },
 };

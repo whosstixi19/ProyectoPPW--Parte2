@@ -1,241 +1,155 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import {
-  Firestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  updateDoc,
-  doc,
-  Timestamp,
-  onSnapshot,
-} from '@angular/fire/firestore';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, from, of, firstValueFrom } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { Asesoria } from '../models/user.model';
-import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
-// Servicio para gestionar asesorías - CRUD y consultas en tiempo real
+/**
+ * Servicio para gestionar asesorías usando FastAPI + PostgreSQL
+ * Ya NO usa Firestore - Todo va a través de la API REST
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class AsesoriaService {
-  private apiUrl = environment.api.fastApi; // URL del backend FastAPI
-  
+  private apiUrl = `${environment.api.fastApi}/asesorias`;
+
   constructor(
-    private firestore: Firestore,
     private http: HttpClient,
     private authService: AuthService
   ) {}
 
-  // Crear nueva solicitud de asesoría en Firestore
-  async crearAsesoria(asesoria: Omit<Asesoria, 'id' | 'fecha'>): Promise<Asesoria> {
-    const asesoriasRef = collection(this.firestore, 'asesorias');
-    const docRef = await addDoc(asesoriasRef, {
-      ...asesoria,
-      fecha: Timestamp.now(),
-    });
+  /**
+   * MÉTODOS DE COMPATIBILIDAD (para no romper componentes existentes)
+   * Convierten Observables a Promises usando firstValueFrom
+   */
 
-    return {
-      id: docRef.id,
-      ...asesoria,
-      fecha: new Date(),
-    } as Asesoria;
-  }
+  async crearAsesoria(asesoria: Partial<Asesoria>): Promise<Asesoria> {
+    // Transformar de camelCase a snake_case para FastAPI
+    const asesoriaApi = {
+      usuario_uid: asesoria.usuarioUid,
+      usuario_nombre: asesoria.usuarioNombre,
+      usuario_email: asesoria.usuarioEmail,
+      programador_uid: asesoria.programadorUid,
+      programador_nombre: asesoria.programadorNombre,
+      tema: asesoria.tema,
+      descripcion: asesoria.descripcion,
+      comentario: asesoria.comentario || null,
+      fecha_solicitada: asesoria.fechaSolicitada,
+      hora_solicitada: asesoria.horaSolicitada,
+      estado: asesoria.estado || 'pendiente',
+      respuesta: asesoria.respuesta || null,
+    };
 
-  // Obtener asesorías pendientes de un programador (sin tiempo real)
-  async getAsesoriasPendientes(programadorUid: string): Promise<Asesoria[]> {
-    const asesoriasRef = collection(this.firestore, 'asesorias');
-    const q = query(
-      asesoriasRef,
-      where('programadorUid', '==', programadorUid),
-      where('estado', '==', 'pendiente'),
+    return firstValueFrom(
+      this.http.post<Asesoria>(this.apiUrl, asesoriaApi)
     );
-    const snapshot = await getDocs(q);
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Asesoria[];
   }
 
-  // Obtener todas las asesorías de un usuario
   async getAsesoriasUsuario(usuarioUid: string): Promise<Asesoria[]> {
-    const asesoriasRef = collection(this.firestore, 'asesorias');
-    const q = query(asesoriasRef, where('usuarioUid', '==', usuarioUid));
-    const snapshot = await getDocs(q);
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Asesoria[];
+    return firstValueFrom(
+      this.http.get<Asesoria[]>(`${this.apiUrl}/usuario/${usuarioUid}`)
+    );
   }
 
-  // Obtener todas las asesorías de un programador (todas las estados)
+  async getAsesoriasPendientes(programadorUid: string): Promise<Asesoria[]> {
+    return firstValueFrom(
+      this.http.get<Asesoria[]>(`${this.apiUrl}/programador/${programadorUid}/pendientes`)
+    );
+  }
+
   async getAllAsesoriasProgramador(programadorUid: string): Promise<Asesoria[]> {
-    const asesoriasRef = collection(this.firestore, 'asesorias');
-    const q = query(asesoriasRef, where('programadorUid', '==', programadorUid));
-    const snapshot = await getDocs(q);
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Asesoria[];
+    return firstValueFrom(
+      this.http.get<Asesoria[]>(`${this.apiUrl}/programador/${programadorUid}`)
+    );
   }
 
-  // Aprobar o rechazar una asesoría
   async responderAsesoria(
-    asesoriaId: string,
+    asesoriaId: number,
     estado: 'aprobada' | 'rechazada',
-    respuesta: string,
-  ): Promise<void> {
-    const asesoriaRef = doc(this.firestore, 'asesorias', asesoriaId);
-    await updateDoc(asesoriaRef, {
-      estado,
-      respuesta,
-      fechaRespuesta: Timestamp.now(),
-    });
+    respuesta: string
+  ): Promise<Asesoria> {
+    return firstValueFrom(
+      this.http.put<Asesoria>(`${this.apiUrl}/${asesoriaId}`, {
+        estado,
+        respuesta,
+      })
+    );
   }
 
-  // Escuchar asesorías pendientes en tiempo real (para notificaciones)
-  getAsesoriasPendientesRealtime(programadorUid: string): Observable<Asesoria[]> {
-    return new Observable((observer) => {
-      const asesoriasRef = collection(this.firestore, 'asesorias');
-      const q = query(
-        asesoriasRef,
-        where('programadorUid', '==', programadorUid),
-        where('estado', '==', 'pendiente'),
-      );
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const asesorias = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Asesoria[];
-        observer.next(asesorias);
-      });
-
-      return () => unsubscribe();
-    });
-  }
-
-  // Escuchar asesorías de un usuario en tiempo real (todas)
-  getAsesoriasUsuarioRealtime(usuarioUid: string): Observable<Asesoria[]> {
-    return new Observable((observer) => {
-      const asesoriasRef = collection(this.firestore, 'asesorias');
-      const q = query(asesoriasRef, where('usuarioUid', '==', usuarioUid));
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const asesorias = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Asesoria[];
-        observer.next(asesorias);
-      });
-
-      return () => unsubscribe();
-    });
-  }
-
-  // Verificar si un horario específico está disponible
   async verificarDisponibilidadHorario(
     programadorUid: string,
     fecha: string,
-    hora: string,
+    hora: string
   ): Promise<boolean> {
-    try {
-      const asesoriasRef = collection(this.firestore, 'asesorias');
-      const q = query(
-        asesoriasRef,
-        where('programadorUid', '==', programadorUid),
-        where('fechaSolicitada', '==', fecha),
-        where('horaSolicitada', '==', hora),
-        where('estado', 'in', ['pendiente', 'aprobada'])
-      );
-      const snapshot = await getDocs(q);
-      
-      // Retorna true si está disponible (no hay documentos)
-      return snapshot.empty;
-    } catch (error) {
-      console.error('Error verificando disponibilidad:', error);
-      return false;
-    }
+    // Obtener todas las asesorías del programador y filtrar en el cliente
+    return firstValueFrom(
+      this.http
+        .get<Asesoria[]>(`${this.apiUrl}/programador/${programadorUid}`)
+        .pipe(
+          map((asesorias) => {
+            const ocupado = asesorias.some(
+              (a) => 
+                a.fechaSolicitada === fecha &&
+                a.horaSolicitada === hora &&
+                (a.estado === 'pendiente' || a.estado === 'aprobada')
+            );
+            return !ocupado;
+          }),
+          catchError(() => of(false))
+        )
+    );
   }
 
-  // Obtener todos los horarios ocupados de un programador en una fecha
   async getHorariosOcupados(programadorUid: string, fecha: string): Promise<string[]> {
-    try {
-      const asesoriasRef = collection(this.firestore, 'asesorias');
-      const q = query(
-        asesoriasRef,
-        where('programadorUid', '==', programadorUid),
-        where('fechaSolicitada', '==', fecha),
-        where('estado', 'in', ['pendiente', 'aprobada'])
-      );
-      const snapshot = await getDocs(q);
-      
-      // Extraer solo las horas ocupadas
-      return snapshot.docs.map(doc => (doc.data() as Asesoria).horaSolicitada);
-    } catch (error) {
-      console.error('Error obteniendo horarios ocupados:', error);
-      return [];
-    }
-  }
-
-  // ============ MÉTODOS PARA USAR EL BACKEND JAVA CON JWT ============
-  
-  /**
-   * Obtener todas las asesorías desde el backend Java (con JWT)
-   */
-  async getAsesoriasFromBackend(): Promise<any[]> {
-    try {
-      const headers = this.authService.getAuthHeaders();
-      const response = await this.http.get<any[]>(
-        `${this.apiUrl}/asesoria`,
-        { headers }
-      ).toPromise();
-      return response || [];
-    } catch (error) {
-      console.error('Error obteniendo asesorías del backend:', error);
-      return [];
-    }
+    // Obtener todas las asesorías del programador y filtrar en el cliente
+    return firstValueFrom(
+      this.http
+        .get<Asesoria[]>(`${this.apiUrl}/programador/${programadorUid}`)
+        .pipe(
+          map((asesorias) => {
+            return asesorias
+              .filter((a) => 
+                a.fechaSolicitada === fecha &&
+                (a.estado === 'pendiente' || a.estado === 'aprobada')
+              )
+              .map((a) => a.horaSolicitada);
+          }),
+          catchError(() => of([]))
+        )
+    );
   }
 
   /**
-   * Crear asesoría en el backend Java (con JWT)
+   * Simulación de "tiempo real" - Retorna Observable para suscripciones
    */
-  async crearAsesoriaEnBackend(asesoria: any): Promise<any> {
-    try {
-      const headers = this.authService.getAuthHeaders();
-      const response = await this.http.post<any>(
-        `${this.apiUrl}/asesoria`,
-        asesoria,
-        { headers }
-      ).toPromise();
-      return response;
-    } catch (error) {
-      console.error('Error creando asesoría en backend:', error);
-      throw error;
-    }
+  getAsesoriasPendientesRealtime(programadorUid: string): Observable<Asesoria[]> {
+    return this.http.get<Asesoria[]>(`${this.apiUrl}/programador/${programadorUid}/pendientes`);
+  }
+
+  getAsesoriasUsuarioRealtime(usuarioUid: string): Observable<Asesoria[]> {
+    return this.http.get<Asesoria[]>(`${this.apiUrl}/usuario/${usuarioUid}`);
   }
 
   /**
-   * Actualizar asesoría en el backend Java (con JWT)
+   * MÉTODOS OBSERVABLES (para componentes que prefieren suscribirse)
    */
-  async actualizarAsesoriaEnBackend(id: string, asesoria: any): Promise<any> {
-    try {
-      const headers = this.authService.getAuthHeaders();
-      const response = await this.http.put<any>(
-        `${this.apiUrl}/asesoria/${id}`,
-        asesoria,
-        { headers }
-      ).toPromise();
-      return response;
-    } catch (error) {
-      console.error('Error actualizando asesoría en backend:', error);
-      throw error;
-    }
+
+  crearAsesoriaObservable(asesoria: Partial<Asesoria>): Observable<Asesoria> {
+    return this.http.post<Asesoria>(this.apiUrl, asesoria);
+  }
+
+  getAsesoriasObservable(): Observable<Asesoria[]> {
+    return this.http.get<Asesoria[]>(this.apiUrl);
+  }
+
+  actualizarAsesoria(id: number, asesoria: Partial<Asesoria>): Observable<Asesoria> {
+    return this.http.put<Asesoria>(`${this.apiUrl}/${id}`, asesoria);
+  }
+
+  eliminarAsesoria(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

@@ -25,52 +25,30 @@ export class PersonaService {
     private authService: AuthService
   ) {}
 
-  private getHeaders(): Observable<HttpHeaders> {
-    return from(this.authService.getIdToken()).pipe(
-      switchMap((token) => {
-        return from([
-          new HttpHeaders({
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          }),
-        ]);
-      })
-    );
-  }
+  // Ya NO necesitamos getHeaders con token - Backend confía en Angular
+  // private getHeaders(): Observable<HttpHeaders> { ... }
 
   getPersonas(): Observable<Persona[]> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.get<Persona[]>(this.apiUrl, { headers }))
-    );
+    return this.http.get<Persona[]>(this.apiUrl);
   }
 
   getPersona(id: number): Observable<Persona> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.get<Persona>(`${this.apiUrl}/${id}`, { headers }))
-    );
+    return this.http.get<Persona>(`${this.apiUrl}/${id}`);
   }
 
   getPersonaByEmail(email: string): Observable<Persona> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.get<Persona>(`${this.apiUrl}/email/${email}`, { headers }))
-    );
+    return this.http.get<Persona>(`${this.apiUrl}/email/${email}`);
   }
 
   createPersona(persona: Persona): Observable<Persona> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.post<Persona>(this.apiUrl, persona, { headers }))
-    );
+    return this.http.post<Persona>(this.apiUrl, persona);
   }
 
   updatePersona(id: number, persona: Persona): Observable<Persona> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.put<Persona>(`${this.apiUrl}/${id}`, persona, { headers }))
-    );
+    return this.http.put<Persona>(`${this.apiUrl}/${id}`, persona);
   }
 
   deletePersona(id: number): Observable<void> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.delete<void>(`${this.apiUrl}/${id}`, { headers }))
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
