@@ -32,6 +32,8 @@
     "@emailjs/browser": "^4.4.1",
     "chart.js": "^4.5.1",
     "firebase": "^12.6.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.1.0",
     "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

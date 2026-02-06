@@ -7,6 +7,8 @@ import { UserService } from '../services/user.service';
 import { Asesoria, Programador } from '../models/user.model';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 Chart.register(...registerables);
 
@@ -45,6 +47,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   chartTemas: Chart | null = null;
   
   loading = true;
+  exportingPdf = false;
+  currentDate = new Date();
   private subscription: Subscription | null = null;
   private datosListos = false;
 
@@ -90,6 +94,55 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     await this.loadUserAndData();
     
     console.log('✅ Dashboard recargado exitosamente');
+  }
+
+  async exportarPdf(): Promise<void> {
+    if (this.loading || this.exportingPdf) return;
+
+    const exportElement = document.getElementById('dashboardExport');
+    if (!exportElement) {
+      alert('No se pudo encontrar el contenido del dashboard para exportar.');
+      return;
+    }
+
+    this.exportingPdf = true;
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const canvas = await html2canvas(exportElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#0f0f10',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      const fecha = new Date().toISOString().slice(0, 10);
+      pdf.save(`dashboard-${fecha}.pdf`);
+    } catch (error) {
+      console.error('Error exportando PDF:', error);
+      alert('No se pudo generar el PDF. Intenta nuevamente.');
+    } finally {
+      this.exportingPdf = false;
+    }
   }
 
   async loadUserAndData(): Promise<void> {

@@ -15,6 +15,15 @@
           <span class="icon">👤</span>
           Perfil
         </button>
+        <button
+          class="btn-nav"
+          (click)="exportarPdf()"
+          [disabled]="loading || exportingPdf"
+          title="Exportar resumen a PDF"
+        >
+          <span class="icon">📄</span>
+          {{ exportingPdf ? 'Generando...' : 'Exportar PDF' }}
+        </button>
         <button class="btn-refresh" (click)="recargarDashboard()" [disabled]="loading" title="Recargar gráficos">
           <span class="refresh-icon">🔄</span>
           Recargar
@@ -34,7 +43,14 @@
   </div>
 
   <!-- Content -->
-  <div *ngIf="!loading" class="dashboard-content">
+  <div *ngIf="!loading" class="dashboard-content" id="dashboardExport">
+    <div class="dashboard-summary-header">
+      <div class="summary-title">Resumen del Dashboard</div>
+      <div class="summary-user">
+        {{ currentUser?.displayName || currentUser?.email || 'Usuario' }}
+      </div>
+      <div class="summary-date">{{ currentDate | date: 'longDate' }}</div>
+    </div>
     <!-- Stats Cards -->
     <div class="stats-grid">
       <div class="stat-card stat-total">
