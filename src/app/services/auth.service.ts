@@ -8,7 +8,7 @@ import {
   User,
   onAuthStateChanged,
 } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Usuario, UserRole } from '../models/user.model';
@@ -165,7 +165,15 @@ export class AuthService {
     try {
       const userDoc = await getDoc(doc(this.firestore, 'usuarios', uid));
       if (userDoc.exists()) {
-        this.currentUser = userDoc.data() as Usuario;
+        const data = userDoc.data() as Usuario;
+        const firebaseEmail = this.auth.currentUser?.email || '';
+
+        if ((!data.email || data.email.trim() === '') && firebaseEmail) {
+          await updateDoc(doc(this.firestore, 'usuarios', uid), { email: firebaseEmail });
+          data.email = firebaseEmail;
+        }
+
+        this.currentUser = data;
         this.saveToCache(this.currentUser);
       }
     } catch (error) {

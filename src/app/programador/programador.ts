@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
@@ -15,7 +15,7 @@ import { WhatsappSetupService } from '../services/whatsapp-setup.service';
 // Componente de perfil del programador - Gestión de proyectos, asesorías, ausencias y horarios
 @Component({
   selector: 'app-programador',
-  imports: [CommonModule, FormsModule, WhatsappSetupModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, WhatsappSetupModalComponent],
   templateUrl: './programador.html',
   styleUrl: './programador.scss',
 })

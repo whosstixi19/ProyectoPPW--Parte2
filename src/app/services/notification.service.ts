@@ -108,6 +108,12 @@ export class NotificationService {
   ): Promise<{ success: boolean }> {
     return new Promise(async (resolve, reject) => {
       try {
+        if (!asesoria.usuarioEmail || !asesoria.usuarioEmail.trim()) {
+          console.warn('⚠️ Email del usuario vacío: se omite el envío de correo de respuesta.');
+          resolve({ success: false });
+          return;
+        }
+
         const esAprobada = asesoria.estado === 'aprobada';
         
         const templateParams = {
