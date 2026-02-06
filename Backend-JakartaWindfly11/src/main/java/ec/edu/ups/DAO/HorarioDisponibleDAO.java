@@ -19,11 +19,11 @@ public class HorarioDisponibleDAO {
 		em.merge(horario);
 	}
 	
-	public HorarioDisponible read(Long pk) {
+	public HorarioDisponible read(Integer pk) {
 		return em.find(HorarioDisponible.class, pk);
 	}
 	
-	public void delete(Long pk) {
+	public void delete(Integer pk) {
 		HorarioDisponible horario = em.find(HorarioDisponible.class, pk);
 		em.remove(horario);
 	}

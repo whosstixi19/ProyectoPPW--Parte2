@@ -1,4 +1,8 @@
 {
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  },
   "hosting": {
     "public": "dist/Proyecto_CardenasA_TixiJ/browser",
     "ignore": [

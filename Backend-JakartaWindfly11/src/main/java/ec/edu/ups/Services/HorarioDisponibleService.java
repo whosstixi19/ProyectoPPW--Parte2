@@ -12,7 +12,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
 @Path("horario")
-// @Secured  // DESHABILITADO TEMPORALMENTE PARA PRUEBAS
 public class HorarioDisponibleService {
 	
 	@Inject
@@ -28,7 +27,7 @@ public class HorarioDisponibleService {
 	@GET
 	@Path("/{id}")
 	@Produces("application/json")
-	public Response getHorario(@PathParam("id") Long id) {
+	public Response getHorario(@PathParam("id") Integer id) {
 		HorarioDisponible h;
 		try {
 			h = gh.getHorario(id);
@@ -102,7 +101,7 @@ public class HorarioDisponibleService {
 	@Path("/{id}")
 	@Consumes("application/json")
 	@Produces("application/json")
-	public Response updateHorario(@PathParam("id") Long id, HorarioDisponible horario, @Context UriInfo uriInfo) {
+	public Response updateHorario(@PathParam("id") Integer id, HorarioDisponible horario, @Context UriInfo uriInfo) {
 		try {
 			if(horario.getId() != null && !id.equals(horario.getId())) {
 				Error error = new Error(
@@ -137,5 +136,35 @@ public class HorarioDisponibleService {
 		}
 
 		return Response.ok(horario).build();
+	}
+	
+	@DELETE
+	@Path("/{id}")
+	@Produces("application/json")
+	public Response deleteHorario(@PathParam("id") Integer id) {
+		try {
+			HorarioDisponible h = gh.getHorario(id);
+			
+			if(h == null) {
+				Error error = new Error(
+						404,
+						"No encontrado",
+						"Horario con ID " + id + " no existe");
+				return Response.status(Response.Status.NOT_FOUND)
+						.entity(error).build();
+			}
+			
+			gh.eliminarHorario(id);
+			return Response.noContent().build();
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+			Error error = new Error(
+					500,
+					"Error interno",
+					e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(error).build();
+		}
 	}
 }

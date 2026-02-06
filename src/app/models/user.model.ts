@@ -7,11 +7,13 @@ export interface Usuario {
   email: string;
   displayName: string;
   photoURL?: string;
+  telefono?: string;
   role: UserRole;
   createdAt: Date;
 }
 
 export interface HorarioDisponible {
+  id?: number; // ID de PostgreSQL
   dia: 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
   horaInicio: string; // Formato "HH:mm"
   horaFin: string; // Formato "HH:mm"
@@ -56,7 +58,7 @@ export interface Programador extends Usuario {
 }
 
 export interface Asesoria {
-  id?: string;
+  id?: number; // ID autoincremental de PostgreSQL
   usuarioUid: string;
   usuarioNombre: string;
   usuarioEmail: string;
@@ -68,7 +70,7 @@ export interface Asesoria {
   fechaSolicitada: string; // Fecha en formato YYYY-MM-DD
   horaSolicitada: string; // Hora en formato HH:mm
   estado: 'pendiente' | 'aprobada' | 'rechazada';
-  fecha: any; // Firestore Timestamp (fecha de creación de la solicitud)
+  fecha: any; // Fecha de creación de la solicitud
   respuesta?: string;
-  fechaRespuesta?: any; // Firestore Timestamp
+  fechaRespuesta?: any; // Fecha de respuesta
 }

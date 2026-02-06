@@ -3,7 +3,6 @@
     <button class="close-btn" (click)="cerrar()">&times;</button>
     
     <div class="modal-header">
-      <div class="whatsapp-icon">📱</div>
       <h2>Configurar WhatsApp</h2>
     </div>
 
@@ -36,7 +35,7 @@
             <span class="error-message">{{ mensajeError }}</span>
           }
           @if (telefonoValido) {
-            <span class="success-message">✅ Número válido: {{ telefono }}</span>
+            <span class="success-message">Número válido: {{ telefono }}</span>
           }
         </div>
       </div>
@@ -53,7 +52,7 @@
               readonly 
               class="readonly-input"
             />
-            <button class="copy-btn" (click)="copiarNumero()">📋 Copiar</button>
+            <button class="copy-btn" (click)="copiarNumero()">Copiar</button>
           </div>
         </div>
       </div>
@@ -70,28 +69,28 @@
               readonly 
               class="readonly-input message-input"
             />
-            <button class="copy-btn" (click)="copiarMensaje()">📋 Copiar</button>
+            <button class="copy-btn" (click)="copiarMensaje()">Copiar</button>
           </div>
         </div>
       </div>
 
       <!-- Nota importante -->
       <div class="info-box">
-        <strong>📌 Importante:</strong> Debe completar los 3 pasos para recibir notificaciones por WhatsApp. 
+        <strong>Importante:</strong> Debe completar los 3 pasos para recibir notificaciones por WhatsApp.
         El sistema enviará automáticamente los mensajes a su número registrado.
       </div>
     </div>
 
     <div class="modal-footer">
       <button class="btn-secondary" (click)="agregarMasTarde()">
-        ⏰ Agregar más tarde
+        Agregar más tarde
       </button>
       <button 
         class="btn-primary" 
         [disabled]="!telefonoValido"
         (click)="agregarTelefono()"
       >
-        ✅ Guardar número
+        Guardar número
       </button>
     </div>
   </div>

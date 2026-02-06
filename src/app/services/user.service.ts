@@ -13,6 +13,10 @@ import {
 } from '@angular/fire/firestore';
 import { Programador, Proyecto, HorarioDisponible, Ausencia } from '../models/user.model';
 import { CacheService } from './cache.service';
+import { ProyectoService, Proyecto as ProyectoAPI } from './proyecto.service';
+import { HorarioService, HorarioDisponible as HorarioAPI } from './horario.service';
+import { AusenciaService } from './ausencia.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +25,18 @@ export class UserService {
   constructor(
     private firestore: Firestore,
     private cacheService: CacheService,
+    private proyectoService: ProyectoService,
+    private horarioService: HorarioService,
+    private ausenciaService: AusenciaService
   ) {}
+
+  // Helper: Mapear Firebase UID a ID numérico de PostgreSQL
+  // TODO: Crear tabla de mapeo en PostgreSQL para esto
+  private getProgramadorIdNumerico(firebaseUid: string): number {
+    // Por ahora retorna 1 como ID temporal
+    // En producción deberías tener una tabla: firebase_uid_mapping(uid varchar, persona_id int)
+    return 1;
+  }
 
   // Obtener todos los usuarios (para admin)
   async getAllUsuarios(): Promise<any[]> {
@@ -87,15 +102,94 @@ export class UserService {
   // Obtener un programador por ID
   async getProgramador(uid: string): Promise<Programador | null> {
     try {
+      // 1. Obtener datos básicos del usuario desde Firestore
       const docRef = doc(this.firestore, 'usuarios', uid);
       const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        return { ...docSnap.data(), uid: docSnap.id } as Programador;
+      if (!docSnap.exists()) {
+        return null;
       }
-      return null;
+
+      const programadorBase = { ...docSnap.data(), uid: docSnap.id } as Programador;
+      
+      // 2. Obtener ID numérico para consultar PostgreSQL
+      const programadorId = this.getProgramadorIdNumerico(uid);
+      
+      // 3. Obtener proyectos desde PostgreSQL via Jakarta API
+      let proyectos: any[] = [];
+      try {
+        const proyectosAPI = await firstValueFrom(
+          this.proyectoService.getProyectosByProgramador(programadorId)
+        );
+        
+        // Transformar de API a modelo Firestore para compatibilidad
+        proyectos = proyectosAPI.map(p => ({
+          id: p.id?.toString(),
+          nombre: p.nombre,
+          descripcion: p.descripcion,
+          tipo: 'laboral' as const,
+          participacion: ['backend'] as any,
+          tecnologias: [],
+          fechaCreacion: new Date(p.fechaInicio)
+        }));
+        
+        console.log('✅ Proyectos cargados desde PostgreSQL:', proyectos.length);
+      } catch (error) {
+        console.warn('⚠️ Error cargando proyectos desde PostgreSQL:', error);
+      }
+      
+      // 4. Obtener horarios desde PostgreSQL via Jakarta API
+      let horariosDisponibles: any[] = [];
+      try {
+        const horariosAPI = await firstValueFrom(
+          this.horarioService.getHorariosByProgramador(uid)
+        );
+        
+        // Transformar de API a modelo Firestore (INCLUYENDO EL ID)
+        horariosDisponibles = horariosAPI.map(h => ({
+          id: h.id, // ¡IMPORTANTE! Incluir el ID de PostgreSQL
+          dia: h.dia as any,
+          horaInicio: h.horaInicio,
+          horaFin: h.horaFin,
+          modalidad: 'virtual' as const,
+          activo: h.activo || h.disponible
+        }));
+        
+        console.log('✅ Horarios cargados desde PostgreSQL:', horariosDisponibles.length);
+      } catch (error) {
+        console.warn('⚠️ Error cargando horarios desde PostgreSQL:', error);
+      }
+
+      // 5. Obtener ausencias desde PostgreSQL via FastAPI
+      let ausencias: any[] = [];
+      try {
+        const programadorIdNum = this.getProgramadorIdNumerico(uid);
+        const ausenciasAPI = await firstValueFrom(
+          this.ausenciaService.getAusenciasByProgramador(programadorIdNum)
+        );
+        
+        // Transformar de API a modelo Firestore
+        ausencias = ausenciasAPI.map(a => ({
+          id: a.id,
+          fecha: new Date(a.fecha),
+          motivo: a.motivo
+        }));
+        
+        console.log('✅ Ausencias cargadas desde PostgreSQL:', ausencias.length);
+      } catch (error) {
+        console.warn('⚠️ Error cargando ausencias desde PostgreSQL:', error);
+      }
+      
+      // 6. Combinar todo y retornar
+      return {
+        ...programadorBase,
+        proyectos,
+        horariosDisponibles,
+        ausencias
+      };
+      
     } catch (error) {
-      console.error('Error obteniendo programador:', error);
+      console.error('❌ Error obteniendo programador:', error);
       return null;
     }
   }
@@ -134,18 +228,42 @@ export class UserService {
   // Agregar proyecto a un programador
   async addProyecto(programadorId: string, proyecto: Proyecto): Promise<boolean> {
     try {
-      const programador = await this.getProgramador(programadorId);
-      if (!programador) return false;
-
-      const proyectos = programador.proyectos || [];
-      proyecto.id = `${Date.now()}`;
-      proyectos.push(proyecto);
-
-      const docRef = doc(this.firestore, 'usuarios', programadorId);
-      await updateDoc(docRef, { proyectos });
+      const programadorIdNum = this.getProgramadorIdNumerico(programadorId);
+      
+      // Generar un ID único si no existe - usando timestamp + random para evitar duplicados
+      const idProyecto = proyecto.id || `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Obtener fecha de inicio
+      let fechaInicio = '2024-01-01'; // Fecha por defecto
+      if (proyecto.fechaCreacion) {
+        try {
+          fechaInicio = new Date(proyecto.fechaCreacion).toISOString().split('T')[0];
+        } catch (e) {
+          console.warn('Error parseando fecha, usando fecha por defecto');
+        }
+      }
+      
+      // Transformar de modelo Firestore a modelo API REST
+      const proyectoAPI: ProyectoAPI = {
+        id: idProyecto,
+        nombre: proyecto.nombre,
+        descripcion: proyecto.descripcion,
+        fechaInicio: fechaInicio,
+        estado: 'activo',
+        programadorId: programadorIdNum
+      };
+      
+      console.log('📤 Enviando proyecto a Jakarta:', proyectoAPI);
+      
+      // Crear proyecto en PostgreSQL via Jakarta API
+      const nuevoProyecto = await firstValueFrom(
+        this.proyectoService.createProyecto(proyectoAPI)
+      );
+      console.log('✅ Proyecto creado en PostgreSQL:', nuevoProyecto);
+      this.cacheService.invalidate();
       return true;
     } catch (error) {
-      console.error('Error agregando proyecto:', error);
+      console.error('❌ Error agregando proyecto:', error);
       return false;
     }
   }
@@ -153,19 +271,29 @@ export class UserService {
   // Actualizar proyecto
   async updateProyecto(programadorId: string, proyecto: Proyecto): Promise<boolean> {
     try {
-      const programador = await this.getProgramador(programadorId);
-      if (!programador || !programador.proyectos) return false;
-
-      const index = programador.proyectos.findIndex((p) => p.id === proyecto.id);
-      if (index === -1) return false;
-
-      programador.proyectos[index] = proyecto;
-
-      const docRef = doc(this.firestore, 'usuarios', programadorId);
-      await updateDoc(docRef, { proyectos: programador.proyectos });
+      if (!proyecto.id) return false;
+      
+      const programadorIdNum = this.getProgramadorIdNumerico(programadorId);
+      
+      // Transformar de modelo Firestore a modelo API REST
+      const proyectoAPI: ProyectoAPI = {
+        id: proyecto.id,
+        nombre: proyecto.nombre,
+        descripcion: proyecto.descripcion,
+        fechaInicio: new Date(proyecto.fechaCreacion).toISOString().split('T')[0],
+        estado: 'activo',
+        programadorId: programadorIdNum
+      };
+      
+      // Actualizar proyecto en PostgreSQL via Jakarta API
+      const proyectoActualizado = await firstValueFrom(
+        this.proyectoService.updateProyecto(proyecto.id, proyectoAPI)
+      );
+      console.log('✅ Proyecto actualizado en PostgreSQL:', proyectoActualizado);
+      this.cacheService.invalidate();
       return true;
     } catch (error) {
-      console.error('Error actualizando proyecto:', error);
+      console.error('❌ Error actualizando proyecto:', error);
       return false;
     }
   }
@@ -173,16 +301,13 @@ export class UserService {
   // Eliminar proyecto
   async deleteProyecto(programadorId: string, proyectoId: string): Promise<boolean> {
     try {
-      const programador = await this.getProgramador(programadorId);
-      if (!programador || !programador.proyectos) return false;
-
-      const proyectos = programador.proyectos.filter((p) => p.id !== proyectoId);
-
-      const docRef = doc(this.firestore, 'usuarios', programadorId);
-      await updateDoc(docRef, { proyectos });
+      // El id es string, usarlo directamente
+      // Eliminar proyecto de PostgreSQL via Jakarta API
+      await firstValueFrom(this.proyectoService.deleteProyecto(proyectoId));
+      console.log('✅ Proyecto eliminado de PostgreSQL:', proyectoId);
       return true;
     } catch (error) {
-      console.error('Error eliminando proyecto:', error);
+      console.error('❌ Error eliminando proyecto:', error);
       return false;
     }
   }
@@ -190,11 +315,50 @@ export class UserService {
   // Actualizar horarios de disponibilidad
   async updateHorarios(programadorId: string, horarios: HorarioDisponible[]): Promise<boolean> {
     try {
-      const docRef = doc(this.firestore, 'usuarios', programadorId);
-      await updateDoc(docRef, { horariosDisponibles: horarios });
+      // ESTRATEGIA SIMPLIFICADA: No usar DELETE (backend puede no tenerlo)
+      // 1. Obtener horarios actuales
+      const horariosExistentes = await firstValueFrom(
+        this.horarioService.getHorariosByProgramador(programadorId)
+      );
+      
+      console.log('📋 Horarios existentes:', horariosExistentes.length);
+      console.log('📝 Horarios a guardar:', horarios.length);
+      
+      // 2. Para cada horario existente, intentar actualizarlo o marcarlo para ignorar
+      const horariosExistentesIds = horariosExistentes.map(h => h.id);
+      
+      // 3. Crear los nuevos horarios (los que no tienen ID)
+      for (const horario of horarios) {
+        const horarioAPI: HorarioAPI = {
+          programadorUid: programadorId,
+          dia: horario.dia,
+          horaInicio: horario.horaInicio,
+          horaFin: horario.horaFin,
+          activo: horario.activo,
+          disponible: horario.activo
+        };
+        
+        // Si el horario tiene ID, actualizarlo; si no, crearlo
+        if (horario.id && horariosExistentesIds.includes(horario.id)) {
+          // Actualizar existente
+          horarioAPI.id = horario.id;
+          await firstValueFrom(this.horarioService.updateHorario(horario.id, horarioAPI));
+          console.log('✏️ Horario actualizado:', horario.id);
+        } else {
+          // Crear nuevo
+          await firstValueFrom(this.horarioService.createHorario(horarioAPI));
+          console.log('✅ Horario creado:', horario.dia, horario.horaInicio);
+        }
+      }
+      
+      // 4. NOTA: Los horarios que no están en la nueva lista quedarán en BD
+      // Para eliminarlos necesitarías el método DELETE en Jakarta o implementar
+      // una lógica de "soft delete" marcándolos como activo=false
+      
+      this.cacheService.invalidate();
       return true;
     } catch (error) {
-      console.error('Error actualizando horarios:', error);
+      console.error('❌ Error actualizando horarios:', error);
       return false;
     }
   }
@@ -202,12 +366,32 @@ export class UserService {
   // Actualizar ausencias del programador
   async updateProgramadorAusencias(programadorId: string, ausencias: Ausencia[]): Promise<boolean> {
     try {
-      const docRef = doc(this.firestore, 'usuarios', programadorId);
-      await updateDoc(docRef, { ausencias });
+      // Crear solo las ausencias NUEVAS (sin id de PostgreSQL)
+      // Las ausencias que vinieron de Firestore con id viejo se ignoran
+      const ausenciasNuevas = ausencias.filter(a => !a.id || typeof a.id === 'string');
+      
+      for (const ausencia of ausenciasNuevas) {
+        // Transformar a formato esperado por FastAPI
+        const ausenciaAPI = {
+          programador_uid: programadorId,  // Usar Firebase UID, no ID numérico
+          fecha: new Date(ausencia.fecha).toISOString().split('T')[0], // Convertir a YYYY-MM-DD
+          hora_inicio: ausencia.horaInicio, // HH:mm format
+          hora_fin: ausencia.horaFin,       // HH:mm format
+          motivo: ausencia.motivo || 'No especificado'
+        };
+        
+        console.log('📤 Creando ausencia en FastAPI:', ausenciaAPI);
+        
+        await firstValueFrom(
+          this.ausenciaService.createAusencia(ausenciaAPI as any)
+        );
+        console.log('✅ Ausencia creada en PostgreSQL');
+      }
+      
       this.cacheService.invalidate();
       return true;
     } catch (error) {
-      console.error('Error actualizando ausencias:', error);
+      console.error('❌ Error actualizando ausencias:', error);
       return false;
     }
   }

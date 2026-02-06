@@ -192,7 +192,7 @@
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
-                  {{ asesoria.fechaSolicitada }} - {{ asesoria.horaSolicitada }}
+                  {{ asesoria.fechaSolicitada }} - {{ asesoria.horaSolicitada || 'Sin hora' }}
                 </p>
               </div>
               <span
@@ -296,7 +296,7 @@
           <div class="horarios-info">
             <h4>📅 Horarios Disponibles</h4>
             <div class="horarios-grid">
-              @for (horario of selectedProgramador.horariosDisponibles; track horario.dia) {
+              @for (horario of selectedProgramador.horariosDisponibles; track $index) {
                 <div class="horario-badge">
                   <span class="horario-dia">{{ getDiaNombre(horario.dia) }}</span>
                   <span class="horario-horas">{{ horario.horaInicio }} - {{ horario.horaFin }}</span>

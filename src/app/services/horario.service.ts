@@ -7,10 +7,11 @@ import { switchMap } from 'rxjs/operators';
 
 export interface HorarioDisponible {
   id?: number;
-  programadorId: number;
-  diaSemana: string;
+  programadorUid: string;
+  dia: string;
   horaInicio: string;
   horaFin: string;
+  activo: boolean;
   disponible: boolean;
 }
 
@@ -18,57 +19,33 @@ export interface HorarioDisponible {
   providedIn: 'root',
 })
 export class HorarioService {
-  private apiUrl = `${environment.api.jakarta}/horario`; // Cambio de horarios a horario
+  private apiUrl = `${environment.api.jakarta}/horario`;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {}
 
-  private getHeaders(): Observable<HttpHeaders> {
-    return from(this.authService.getIdToken()).pipe(
-      switchMap((token) => {
-        return from([
-          new HttpHeaders({
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          }),
-        ]);
-      })
-    );
-  }
+  // Ya NO necesitamos getHeaders con token - Backend confía en Angular
+  // private getHeaders(): Observable<HttpHeaders> { ... }
 
   getHorarios(): Observable<HorarioDisponible[]> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.get<HorarioDisponible[]>(this.apiUrl, { headers }))
-    );
+    return this.http.get<HorarioDisponible[]>(this.apiUrl);
   }
 
-  getHorariosByProgramador(programadorId: number): Observable<HorarioDisponible[]> {
-    return this.getHeaders().pipe(
-      switchMap((headers) =>
-        this.http.get<HorarioDisponible[]>(`${this.apiUrl}/programador/${programadorId}`, { headers })
-      )
-    );
+  getHorariosByProgramador(programadorUid: string): Observable<HorarioDisponible[]> {
+    return this.http.get<HorarioDisponible[]>(`${this.apiUrl}/programador/${programadorUid}`);
   }
 
   createHorario(horario: HorarioDisponible): Observable<HorarioDisponible> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.post<HorarioDisponible>(this.apiUrl, horario, { headers }))
-    );
+    return this.http.post<HorarioDisponible>(this.apiUrl, horario);
   }
 
   updateHorario(id: number, horario: HorarioDisponible): Observable<HorarioDisponible> {
-    return this.getHeaders().pipe(
-      switchMap((headers) =>
-        this.http.put<HorarioDisponible>(`${this.apiUrl}/${id}`, horario, { headers })
-      )
-    );
+    return this.http.put<HorarioDisponible>(`${this.apiUrl}/${id}`, horario);
   }
 
   deleteHorario(id: number): Observable<void> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.delete<void>(`${this.apiUrl}/${id}`, { headers }))
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

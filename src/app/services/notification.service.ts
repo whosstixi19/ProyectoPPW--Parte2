@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import emailjs from '@emailjs/browser';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { environment } from '../../environments/environment';
 
 // Servicio para envío de notificaciones por correo electrónico
@@ -7,9 +8,31 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class NotificationService {
-  constructor() {
+  constructor(private functions: Functions) {
     // Inicializar EmailJS con la public key
     emailjs.init(environment.emailjs.publicKey);
+  }
+
+  // Verificar si WhatsApp está habilitado
+  isWhatsappEnabled(): boolean {
+    return environment.whatsappEnabled || false;
+  }
+
+  // Enviar WhatsApp usando Firebase Functions
+  async enviarWhatsapp(telefono: string, mensaje: string): Promise<{ success: boolean }> {
+    try {
+      const callable = httpsCallable(this.functions, 'sendWhatsappNotification');
+      const result = await callable({ telefono, mensaje });
+      return result.data as { success: boolean };
+    } catch (error: any) {
+      console.error('❌ Error detallado en enviarWhatsapp:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        fullError: error
+      });
+      throw error;
+    }
   }
 
   // Enviar correo al programador cuando se solicita una asesoría
@@ -85,6 +108,12 @@ export class NotificationService {
   ): Promise<{ success: boolean }> {
     return new Promise(async (resolve, reject) => {
       try {
+        if (!asesoria.usuarioEmail || !asesoria.usuarioEmail.trim()) {
+          console.warn('⚠️ Email del usuario vacío: se omite el envío de correo de respuesta.');
+          resolve({ success: false });
+          return;
+        }
+
         const esAprobada = asesoria.estado === 'aprobada';
         
         const templateParams = {

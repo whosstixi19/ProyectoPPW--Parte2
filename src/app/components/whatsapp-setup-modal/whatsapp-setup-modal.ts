@@ -67,12 +67,12 @@ export class WhatsappSetupModalComponent implements OnInit {
 
   copiarNumero() {
     navigator.clipboard.writeText(this.TWILIO_NUMBER);
-    alert('📋 Número copiado al portapapeles');
+    alert('Número copiado al portapapeles');
   }
 
   copiarMensaje() {
     navigator.clipboard.writeText(this.JOIN_MESSAGE);
-    alert('📋 Mensaje copiado al portapapeles');
+    alert('Mensaje copiado al portapapeles');
   }
 
   agregarMasTarde() {

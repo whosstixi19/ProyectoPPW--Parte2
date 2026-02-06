@@ -57,6 +57,7 @@ firestore-debug.log
 **/firebase-credentials.json
 .env
 .env.local
+.secret.local
 *.pem
 *.key
 

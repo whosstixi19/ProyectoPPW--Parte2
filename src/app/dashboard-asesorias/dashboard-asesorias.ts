@@ -52,7 +52,7 @@ export class DashboardAsesoriasComponent implements OnInit, OnDestroy {
   chartProgramadores: ChartConfiguration<ChartType> | null = null;
 
   // Detalles expandidos
-  detallesExpandidos: { [key: string]: boolean } = {};
+  detallesExpandidos: { [key: number]: boolean } = {};
 
   constructor(
     private asesoriaService: AsesoriaService,
@@ -386,7 +386,7 @@ export class DashboardAsesoriasComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleDetalles(asesoriaId: string | undefined): void {
+  toggleDetalles(asesoriaId: number | undefined): void {
     if (!asesoriaId) return;
     this.detallesExpandidos[asesoriaId] =
       !this.detallesExpandidos[asesoriaId];

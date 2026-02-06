@@ -21,7 +21,7 @@ import java.io.IOException;
 @ApplicationScoped
 public class FirebaseService {
 
-    private static final String CREDENTIALS_PATH = "firebase-sa.json";
+    private static final String CREDENTIALS_PATH = "firebase-credentials.json";
 
     @PostConstruct
     public void initialize() {

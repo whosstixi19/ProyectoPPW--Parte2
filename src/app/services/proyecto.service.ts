@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { switchMap } from 'rxjs/operators';
 
 export interface Proyecto {
-  id?: number;
+  id?: string;
   nombre: string;
   descripcion: string;
   fechaInicio: string;
@@ -19,61 +19,37 @@ export interface Proyecto {
   providedIn: 'root',
 })
 export class ProyectoService {
-  private apiUrl = `${environment.api.jakarta}/proyecto`; // Cambio de proyectos a proyecto
+  private apiUrl = `${environment.api.jakarta}/proyecto`;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {}
 
-  private getHeaders(): Observable<HttpHeaders> {
-    return from(this.authService.getIdToken()).pipe(
-      switchMap((token) => {
-        return from([
-          new HttpHeaders({
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          }),
-        ]);
-      })
-    );
-  }
+  // Ya NO necesitamos getHeaders con token - Backend confía en Angular
+  // private getHeaders(): Observable<HttpHeaders> { ... }
 
   getProyectos(): Observable<Proyecto[]> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.get<Proyecto[]>(this.apiUrl, { headers }))
-    );
+    return this.http.get<Proyecto[]>(this.apiUrl);
   }
 
-  getProyecto(id: number): Observable<Proyecto> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.get<Proyecto>(`${this.apiUrl}/${id}`, { headers }))
-    );
+  getProyecto(id: string): Observable<Proyecto> {
+    return this.http.get<Proyecto>(`${this.apiUrl}/${id}`);
   }
 
   getProyectosByProgramador(programadorId: number): Observable<Proyecto[]> {
-    return this.getHeaders().pipe(
-      switchMap((headers) =>
-        this.http.get<Proyecto[]>(`${this.apiUrl}/programador/${programadorId}`, { headers })
-      )
-    );
+    return this.http.get<Proyecto[]>(`${this.apiUrl}/programador-id/${programadorId}`);
   }
 
   createProyecto(proyecto: Proyecto): Observable<Proyecto> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.post<Proyecto>(this.apiUrl, proyecto, { headers }))
-    );
+    return this.http.post<Proyecto>(this.apiUrl, proyecto);
   }
 
-  updateProyecto(id: number, proyecto: Proyecto): Observable<Proyecto> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.put<Proyecto>(`${this.apiUrl}/${id}`, proyecto, { headers }))
-    );
+  updateProyecto(id: string, proyecto: Proyecto): Observable<Proyecto> {
+    return this.http.put<Proyecto>(`${this.apiUrl}/${id}`, proyecto);
   }
 
-  deleteProyecto(id: number): Observable<void> {
-    return this.getHeaders().pipe(
-      switchMap((headers) => this.http.delete<void>(`${this.apiUrl}/${id}`, { headers }))
-    );
+  deleteProyecto(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

@@ -17,7 +17,7 @@ public class GestionHorarios {
 		return daoHorario.getAll();
 	}
 	
-	public HorarioDisponible getHorario(Long id) throws Exception {
+	public HorarioDisponible getHorario(Integer id) throws Exception {
 		if(id == null)
 			throw new Exception("Parámetro incorrecto");
 		
@@ -37,6 +37,17 @@ public class GestionHorarios {
 	        throw new Exception("Día requerido");
 
 	    daoHorario.update(horario);
+	}
+	
+	public void eliminarHorario(Integer id) throws Exception {
+		if(id == null)
+			throw new Exception("ID requerido");
+		
+		HorarioDisponible h = daoHorario.read(id);
+		if(h == null)
+			throw new Exception("Horario no encontrado");
+		
+		daoHorario.delete(id);
 	}
 	
 	public List<HorarioDisponible> getHorariosByProgramador(String programadorUid) throws Exception {

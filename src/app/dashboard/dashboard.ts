@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -7,6 +7,8 @@ import { UserService } from '../services/user.service';
 import { Asesoria, Programador } from '../models/user.model';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 Chart.register(...registerables);
 
@@ -45,6 +47,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   chartTemas: Chart | null = null;
   
   loading = true;
+  exportingPdf = false;
+  currentDate = new Date();
   private subscription: Subscription | null = null;
   private datosListos = false;
 
@@ -52,7 +56,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private asesoriaService: AsesoriaService,
     private userService: UserService,
-    private router: Router
+    public router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -62,8 +67,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     // Crear gráficos después de que la vista esté inicializada
     if (this.datosListos && this.asesorias.length > 0) {
-      console.log('Vista inicializada, creando gráficos...');
-      setTimeout(() => this.crearGraficos(), 200);
+      console.log('Vista inicializada, intentando crear gráficos...');
+      this.intentarCrearGraficos();
     }
   }
 
@@ -71,6 +76,72 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroyCharts();
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Recargar todos los datos del dashboard y recrear gráficos
+   */
+  async recargarDashboard(): Promise<void> {
+    console.log('🔄 Recargando dashboard...');
+    this.loading = true;
+    this.datosListos = false;
+    
+    // Destruir gráficos existentes
+    this.destroyCharts();
+    
+    // Recargar todos los datos
+    await this.loadUserAndData();
+    
+    console.log('✅ Dashboard recargado exitosamente');
+  }
+
+  async exportarPdf(): Promise<void> {
+    if (this.loading || this.exportingPdf) return;
+
+    const exportElement = document.getElementById('dashboardExport');
+    if (!exportElement) {
+      alert('No se pudo encontrar el contenido del dashboard para exportar.');
+      return;
+    }
+
+    this.exportingPdf = true;
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const canvas = await html2canvas(exportElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#0f0f10',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      const fecha = new Date().toISOString().slice(0, 10);
+      pdf.save(`dashboard-${fecha}.pdf`);
+    } catch (error) {
+      console.error('Error exportando PDF:', error);
+      alert('No se pudo generar el PDF. Intenta nuevamente.');
+    } finally {
+      this.exportingPdf = false;
     }
   }
 
@@ -115,13 +186,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log('Estadísticas calculadas:', this.estadisticas);
       
       this.datosListos = true;
+      this.loading = false;
+      
+      // Forzar detección de cambios para renderizar el DOM
+      this.cdr.detectChanges();
       
       // Crear gráficos después de que el DOM esté listo
       if (this.asesorias.length > 0) {
-        setTimeout(() => {
-          console.log('Intentando crear gráficos...');
-          this.crearGraficos();
-        }, 1000);
+        console.log('Datos listos, preparando gráficos...');
+        this.intentarCrearGraficos();
       } else {
         console.log('No hay asesorías, saltando creación de gráficos');
       }
@@ -129,10 +202,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     } catch (error) {
       console.error('Error cargando datos del dashboard:', error);
       alert('Error cargando el dashboard: ' + error);
-    } finally {
-      // Siempre desactivar loading, incluso si hay error
       this.loading = false;
-      console.log('Loading finalizado');
     }
   }
 
@@ -200,6 +270,27 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.estadisticas = stats;
   }
 
+  /**
+   * Intenta crear los gráficos con reintentos si el DOM no está listo
+   */
+  intentarCrearGraficos(intentos: number = 0): void {
+    const maxIntentos = 10;
+    const delay = 150;
+
+    // Verificar si al menos un canvas está disponible
+    const canvas = document.getElementById('chartEstado');
+    
+    if (canvas) {
+      console.log('✅ DOM listo, creando gráficos...');
+      this.crearGraficos();
+    } else if (intentos < maxIntentos) {
+      console.log(`⏳ DOM no listo, reintentando (${intentos + 1}/${maxIntentos})...`);
+      setTimeout(() => this.intentarCrearGraficos(intentos + 1), delay);
+    } else {
+      console.error('❌ No se pudo crear los gráficos: Canvas no encontrado después de múltiples intentos');
+    }
+  }
+
   crearGraficos(): void {
     try {
       console.log('Iniciando creación de gráficos...');
@@ -209,9 +300,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       }
       this.crearGraficoTendencia();
       this.crearGraficoTemas();
-      console.log('Gráficos creados exitosamente');
+      console.log('✅ Gráficos creados exitosamente');
     } catch (error) {
-      console.error('Error creando gráficos:', error);
+      console.error('❌ Error creando gráficos:', error);
     }
   }
 
@@ -502,6 +593,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   volver(): void {
+    if (this.isProgramador) {
+      this.router.navigate(['/programador']);
+    } else {
+      this.router.navigate(['/asesorias']);
+    }
+  }
+
+  irAInicio(): void {
+    // Ir a la página de inicio
+    this.router.navigate(['/inicio']);
+  }
+
+  irAPerfil(): void {
+    // Ir al panel principal según el rol
     if (this.isProgramador) {
       this.router.navigate(['/programador']);
     } else {
